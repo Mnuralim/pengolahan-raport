@@ -35,13 +35,11 @@ export const getAllTeachers = unstable_cache(
         {
           name: {
             contains: search,
-            mode: "insensitive",
           },
         },
         {
           username: {
             contains: search,
-            mode: "insensitive",
           },
         },
       ];

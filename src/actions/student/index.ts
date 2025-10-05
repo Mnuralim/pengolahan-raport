@@ -51,13 +51,11 @@ export const getAllStudents = unstable_cache(
         {
           name: {
             contains: search,
-            mode: "insensitive",
           },
         },
         {
           nis: {
             contains: search,
-            mode: "insensitive",
           },
         },
       ];

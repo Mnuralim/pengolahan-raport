@@ -25,7 +25,6 @@ export const getAllDevelopmentAssessments = unstable_cache(
           student: {
             name: {
               contains: search,
-              mode: "insensitive",
             },
           },
         },
@@ -33,7 +32,6 @@ export const getAllDevelopmentAssessments = unstable_cache(
           student: {
             nis: {
               contains: search,
-              mode: "insensitive",
             },
           },
         },
@@ -41,14 +39,12 @@ export const getAllDevelopmentAssessments = unstable_cache(
           indicator: {
             name: {
               contains: search,
-              mode: "insensitive",
             },
           },
         },
         {
           notes: {
             contains: search,
-            mode: "insensitive",
           },
         },
       ];

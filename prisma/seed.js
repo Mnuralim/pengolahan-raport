@@ -1,12 +1,14 @@
-import prisma from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
+
+const prisma = new PrismaClient();
 
 async function createAdmin() {
   console.log("Seeding teacher...");
 
   const defaultTeacher = {
-    username: process.env.TEACHER_USERNAME!,
-    password: process.env.TEACHER_PASSWORD!,
+    username: process.env.TEACHER_USERNAME,
+    password: process.env.TEACHER_PASSWORD,
   };
 
   const existingTeacher = await prisma.teacher.findFirst({

@@ -22,14 +22,12 @@ export const getAllClasses = unstable_cache(
         {
           name: {
             contains: search,
-            mode: "insensitive",
           },
         },
         {
           teacher: {
             name: {
               contains: search,
-              mode: "insensitive",
             },
           },
         },
