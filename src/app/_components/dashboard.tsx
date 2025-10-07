@@ -10,6 +10,7 @@ import {
   School,
   ClipboardCheck,
   TrendingUp,
+  Printer,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
@@ -257,7 +258,7 @@ export const Dashboard = ({
               <p className="text-sm font-medium text-gray-900">Tambah Siswa</p>
             </Link>
             <Link
-              href="/assessments?modal=add"
+              href="/students"
               className="p-4 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors text-left"
             >
               <ClipboardCheck className="w-6 h-6 text-gray-700 mb-2" />
@@ -273,13 +274,11 @@ export const Dashboard = ({
               <p className="text-sm font-medium text-gray-900">Kelola Kelas</p>
             </Link>
             <Link
-              href="/reports"
+              href="/prints"
               className="p-4 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors text-left"
             >
-              <BookOpen className="w-6 h-6 text-gray-700 mb-2" />
-              <p className="text-sm font-medium text-gray-900">
-                Laporan Perkembangan
-              </p>
+              <Printer className="w-6 h-6 text-gray-700 mb-2" />
+              <p className="text-sm font-medium text-gray-900">Cetak Raport</p>
             </Link>
           </div>
         </div>

@@ -1,11 +1,10 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 import type { AgeGroup, Prisma } from "@prisma/client";
 
-// Get single aspect with indicators
 export const getDevelopmentAspect = unstable_cache(
   async function getDevelopmentAspect(id: string) {
     return prisma.developmentAspect.findUnique({
@@ -31,7 +30,6 @@ export const getDevelopmentAspect = unstable_cache(
   }
 );
 
-// Get all aspects with indicators
 export const getAllDevelopmentAspects = unstable_cache(
   async function getAllDevelopmentAspects(
     skip: string,
@@ -102,7 +100,6 @@ export const getAllDevelopmentAspects = unstable_cache(
   }
 );
 
-// Get all aspects for dropdown (simple)
 export const getDevelopmentAspectsForDropdown = unstable_cache(
   async function getDevelopmentAspectsForDropdown() {
     return prisma.developmentAspect.findMany({
@@ -130,13 +127,11 @@ export async function createDevelopmentAspectWithIndicators(
   formData: FormData
 ): Promise<FormState> {
   try {
-    // Data Development Aspect
     const name = formData.get("name") as string;
     const code = formData.get("code") as string;
     const description = formData.get("description") as string;
     const order = formData.get("order") as string;
 
-    // Data Development Indicators (array format)
     const indicatorNames = formData.getAll("indicatorNames") as string[];
     const indicatorShortNames = formData.getAll(
       "indicatorShortNames"
@@ -146,7 +141,6 @@ export async function createDevelopmentAspectWithIndicators(
       "indicatorAgeGroups"
     ) as string[];
 
-    // Validasi field wajib untuk Aspect
     if (!name) {
       return {
         error: "Nama aspek perkembangan harus diisi.",
@@ -159,7 +153,6 @@ export async function createDevelopmentAspectWithIndicators(
       };
     }
 
-    // Cek kode yang sudah ada
     const existingCode = await prisma.developmentAspect.findUnique({
       where: { code, isDeleted: false },
     });
@@ -170,14 +163,12 @@ export async function createDevelopmentAspectWithIndicators(
       };
     }
 
-    // Validasi indicators
     if (indicatorNames.length === 0) {
       return {
         error: "Minimal satu indikator harus diisi.",
       };
     }
 
-    // Validasi setiap indicator
     for (let i = 0; i < indicatorNames.length; i++) {
       if (!indicatorNames[i]) {
         return {
@@ -187,7 +178,6 @@ export async function createDevelopmentAspectWithIndicators(
     }
 
     await prisma.$transaction(async (tx) => {
-      // Create Development Aspect
       const createdAspect = await tx.developmentAspect.create({
         data: {
           name,
@@ -197,7 +187,6 @@ export async function createDevelopmentAspectWithIndicators(
         },
       });
 
-      // Create Development Indicators
       const indicatorData = indicatorNames.map((indicatorName, index) => ({
         aspectId: createdAspect.id,
         name: indicatorName,
@@ -218,6 +207,7 @@ export async function createDevelopmentAspectWithIndicators(
     revalidateTag("development-aspect");
     revalidateTag("development-aspects");
     revalidateTag("development-indicators");
+    revalidatePath("/");
     revalidateTag("student");
   } catch (error) {
     console.error("Error creating development aspect with indicators:", error);
@@ -242,7 +232,6 @@ export async function updateDevelopmentAspectWithIndicators(
     const description = formData.get("description") as string;
     const order = formData.get("order") as string;
 
-    // Data Development Indicators
     const indicatorIds = formData.getAll("indicatorIds") as string[];
     const indicatorNames = formData.getAll("indicatorNames") as string[];
     const indicatorShortNames = formData.getAll(
@@ -256,7 +245,6 @@ export async function updateDevelopmentAspectWithIndicators(
       "deletedIndicatorIds"
     ) as string[];
 
-    // Validasi field wajib
     if (!name) {
       return {
         error: "Nama aspek perkembangan harus diisi.",
@@ -279,7 +267,6 @@ export async function updateDevelopmentAspectWithIndicators(
       };
     }
 
-    // Cek kode yang sudah ada (kecuali milik aspek ini)
     const existingCode = await prisma.developmentAspect.findUnique({
       where: {
         code,
@@ -294,14 +281,12 @@ export async function updateDevelopmentAspectWithIndicators(
       };
     }
 
-    // Validasi indicators
     if (indicatorNames.length === 0) {
       return {
         error: "Minimal satu indikator harus diisi.",
       };
     }
 
-    // Validasi setiap indicator
     for (let i = 0; i < indicatorNames.length; i++) {
       if (!indicatorNames[i]) {
         return {
@@ -311,7 +296,6 @@ export async function updateDevelopmentAspectWithIndicators(
     }
 
     await prisma.$transaction(async (tx) => {
-      // Update Development Aspect
       await tx.developmentAspect.update({
         where: { id },
         data: {
@@ -322,7 +306,6 @@ export async function updateDevelopmentAspectWithIndicators(
         },
       });
 
-      // Soft delete removed indicators
       if (deletedIndicatorIds.length > 0) {
         await tx.developmentIndicator.updateMany({
           where: {
@@ -337,7 +320,6 @@ export async function updateDevelopmentAspectWithIndicators(
         });
       }
 
-      // Update/Create indicators
       for (let i = 0; i < indicatorNames.length; i++) {
         const indicatorId = indicatorIds[i];
         const indicatorData = {
@@ -351,13 +333,11 @@ export async function updateDevelopmentAspectWithIndicators(
         };
 
         if (indicatorId && indicatorId !== "") {
-          // Update existing indicator
           await tx.developmentIndicator.update({
             where: { id: indicatorId },
             data: indicatorData,
           });
         } else {
-          // Create new indicator
           await tx.developmentIndicator.create({
             data: indicatorData,
           });
@@ -368,6 +348,7 @@ export async function updateDevelopmentAspectWithIndicators(
     revalidateTag("development-aspect");
     revalidateTag("student");
     revalidateTag("development-indicators");
+    revalidatePath("/");
     revalidateTag("development-aspects");
   } catch (error) {
     console.error("Error updating development aspect with indicators:", error);
@@ -399,7 +380,6 @@ export async function deleteDevelopmentAspect(id: string) {
     }
 
     await prisma.$transaction(async (tx) => {
-      // Soft delete all indicators
       await tx.developmentIndicator.updateMany({
         where: {
           aspectId: id,
@@ -411,7 +391,6 @@ export async function deleteDevelopmentAspect(id: string) {
         },
       });
 
-      // Soft delete aspect
       await tx.developmentAspect.update({
         where: { id },
         data: {
@@ -423,6 +402,7 @@ export async function deleteDevelopmentAspect(id: string) {
     });
 
     revalidateTag("development-aspects");
+    revalidatePath("/");
     revalidateTag("development-aspect");
   } catch (error) {
     console.error("Error deleting development aspect:", error);
@@ -436,7 +416,6 @@ export async function deleteDevelopmentAspect(id: string) {
   );
 }
 
-// Helper function to get single indicator
 export const getDevelopmentIndicator = unstable_cache(
   async function getDevelopmentIndicator(id: string) {
     return prisma.developmentIndicator.findUnique({
@@ -455,7 +434,6 @@ export const getDevelopmentIndicator = unstable_cache(
   }
 );
 
-// Helper function to get indicators by aspect
 export const getIndicatorsByAspect = unstable_cache(
   async function getIndicatorsByAspect(aspectId: string) {
     return prisma.developmentIndicator.findMany({

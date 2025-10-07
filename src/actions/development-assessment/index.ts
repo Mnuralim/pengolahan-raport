@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import type { DevelopmentLevel, Prisma } from "@prisma/client";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 
 export const getAllDevelopmentAssessments = unstable_cache(
@@ -212,7 +212,6 @@ export async function createDevelopmentAssessment(
       };
     }
 
-    // Check if student exists
     const existingStudent = await prisma.student.findUnique({
       where: {
         id: studentId,
@@ -226,7 +225,6 @@ export async function createDevelopmentAssessment(
       };
     }
 
-    // Check if indicator exists
     const existingIndicator = await prisma.developmentIndicator.findUnique({
       where: {
         id: indicatorId,
@@ -240,7 +238,6 @@ export async function createDevelopmentAssessment(
       };
     }
 
-    // Check for duplicate assessment
     const existingAssessment = await prisma.developmentAssessment.findUnique({
       where: {
         studentId_indicatorId: {
@@ -270,6 +267,7 @@ export async function createDevelopmentAssessment(
     revalidateTag("development-assessment");
     revalidateTag("development-assessments");
     revalidateTag("student-development-assessments");
+    revalidatePath("/");
   } catch (error) {
     console.error("Error creating development assessment:", error);
     return {
@@ -325,7 +323,6 @@ export async function updateDevelopmentAssessment(
       };
     }
 
-    // Check if student exists
     const existingStudent = await prisma.student.findUnique({
       where: {
         id: studentId,
@@ -339,7 +336,6 @@ export async function updateDevelopmentAssessment(
       };
     }
 
-    // Check if indicator exists
     const existingIndicator = await prisma.developmentIndicator.findUnique({
       where: {
         id: indicatorId,
@@ -353,7 +349,6 @@ export async function updateDevelopmentAssessment(
       };
     }
 
-    // Check for duplicate assessment (if student or indicator changed)
     if (
       existingAssessment.studentId !== studentId ||
       existingAssessment.indicatorId !== indicatorId
@@ -390,6 +385,7 @@ export async function updateDevelopmentAssessment(
 
     revalidateTag("development-assessment");
     revalidateTag("development-assessments");
+    revalidatePath("/");
     revalidateTag("student-development-assessments");
   } catch (error) {
     console.error("Error updating development assessment:", error);
@@ -428,6 +424,7 @@ export async function deleteDevelopmentAssessment(id: string) {
 
     revalidateTag("development-assessments");
     revalidateTag("development-assessment");
+    revalidatePath("/");
     revalidateTag("student-development-assessments");
   } catch (error) {
     console.error("Error deleting development assessment:", error);
@@ -441,7 +438,6 @@ export async function deleteDevelopmentAssessment(id: string) {
   );
 }
 
-// Bulk create assessments for a student (useful for creating all indicators at once)
 export async function createBulkDevelopmentAssessments(
   prevState: FormState,
   formData: FormData
@@ -463,7 +459,6 @@ export async function createBulkDevelopmentAssessments(
       };
     }
 
-    // Check if student exists
     const existingStudent = await prisma.student.findUnique({
       where: {
         id: studentId,
@@ -477,7 +472,6 @@ export async function createBulkDevelopmentAssessments(
       };
     }
 
-    // Parse assessment data (expecting JSON format)
     let parsedData;
     try {
       parsedData = JSON.parse(assessmentData);
@@ -487,14 +481,12 @@ export async function createBulkDevelopmentAssessments(
       };
     }
 
-    // Validate and create assessments
     const assessmentsToCreate = [];
     for (const item of parsedData) {
       if (!item.indicatorId || !item.development) {
         continue;
       }
 
-      // Check if assessment already exists
       const existing = await prisma.developmentAssessment.findUnique({
         where: {
           studentId_indicatorId: {
@@ -527,6 +519,7 @@ export async function createBulkDevelopmentAssessments(
     revalidateTag("development-assessment");
     revalidateTag("development-assessments");
     revalidateTag("student");
+    revalidatePath("/");
     revalidateTag("student-development-assessments");
   } catch (error) {
     console.error("Error creating bulk development assessments:", error);
@@ -539,8 +532,6 @@ export async function createBulkDevelopmentAssessments(
     `/students/${studentId}?success=1&message=Penilaian perkembangan berhasil ditambahkan.`
   );
 }
-
-// Add this to your development-assessment actions file
 
 export async function updateBulkDevelopmentAssessments(
   prevState: FormState,
@@ -564,7 +555,6 @@ export async function updateBulkDevelopmentAssessments(
       };
     }
 
-    // Check if student exists
     const existingStudent = await prisma.student.findUnique({
       where: {
         id: studentId,
@@ -578,7 +568,6 @@ export async function updateBulkDevelopmentAssessments(
       };
     }
 
-    // Parse assessment data
     let parsedData;
     try {
       parsedData = JSON.parse(assessmentData);
@@ -589,7 +578,6 @@ export async function updateBulkDevelopmentAssessments(
     }
 
     if (isEditMode) {
-      // Update existing assessments
       const updatePromises = [];
 
       for (const item of parsedData) {
@@ -598,7 +586,6 @@ export async function updateBulkDevelopmentAssessments(
         }
 
         if (item.assessmentId) {
-          // Update existing assessment
           updatePromises.push(
             prisma.developmentAssessment.update({
               where: {
@@ -616,7 +603,6 @@ export async function updateBulkDevelopmentAssessments(
             })
           );
         } else {
-          // Create new assessment (in case some indicators weren't assessed before)
           const existingAssessment =
             await prisma.developmentAssessment.findUnique({
               where: {
@@ -648,7 +634,6 @@ export async function updateBulkDevelopmentAssessments(
 
       await Promise.all(updatePromises);
     } else {
-      // Create new assessments (original logic)
       const assessmentsToCreate = [];
 
       for (const item of parsedData) {
@@ -656,7 +641,6 @@ export async function updateBulkDevelopmentAssessments(
           continue;
         }
 
-        // Check if assessment already exists
         const existing = await prisma.developmentAssessment.findUnique({
           where: {
             studentId_indicatorId: {
@@ -690,6 +674,7 @@ export async function updateBulkDevelopmentAssessments(
     revalidateTag("development-assessment");
     revalidateTag("development-assessments");
     revalidateTag("student");
+    revalidatePath("/");
     revalidateTag("student-development-assessments");
   } catch (error) {
     console.error("Error updating bulk development assessments:", error);

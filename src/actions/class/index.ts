@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import type { AgeGroup, Prisma } from "@prisma/client";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 
 export const getAllClasses = unstable_cache(
@@ -137,6 +137,7 @@ export async function createClass(
 
     revalidateTag("class");
     revalidateTag("classes");
+    revalidatePath("/");
     revalidateTag("teachers");
   } catch (error) {
     console.error("Error creating class:", error);
@@ -227,6 +228,7 @@ export async function updateClass(
 
     revalidateTag("class");
     revalidateTag("classes");
+    revalidatePath("/");
     revalidateTag("teachers");
   } catch (error) {
     console.error("Error updating class:", error);
@@ -278,6 +280,7 @@ export async function deleteClass(id: string) {
 
     revalidateTag("classes");
     revalidateTag("class");
+    revalidatePath("/");
     revalidateTag("teachers");
   } catch (error) {
     console.error("Error deleting class:", error);

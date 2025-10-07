@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Gender, Prisma, Religion } from "@prisma/client";
 
@@ -117,7 +117,6 @@ export async function createStudent(
   formData: FormData
 ): Promise<FormState> {
   try {
-    // Data Student
     const nis = formData.get("nis") as string;
     const name = formData.get("name") as string;
     const gender = formData.get("gender") as string;
@@ -135,13 +134,11 @@ export async function createStudent(
     const admittedAt = formData.get("admittedAt") as string;
     const classId = formData.get("classId") as string;
 
-    // Data Physical Development
     const height = formData.get("height") as string;
     const weight = formData.get("weight") as string;
     const headCircumference = formData.get("headCircumference") as string;
     const measurementDate = formData.get("measurementDate") as string;
 
-    // Validasi field wajib
     if (!nis) {
       return {
         error: "NIS harus diisi.",
@@ -172,7 +169,6 @@ export async function createStudent(
       };
     }
 
-    // Cek NIS yang sudah ada
     const existingNis = await prisma.student.findUnique({
       where: { nis, isDeleted: false },
     });
@@ -183,7 +179,6 @@ export async function createStudent(
       };
     }
 
-    // Cek apakah kelas ada
     const existingClass = await prisma.class.findUnique({
       where: { id: classId, isDeleted: false },
     });
@@ -233,6 +228,9 @@ export async function createStudent(
 
     revalidateTag("student");
     revalidateTag("students");
+    revalidateTag("class");
+    revalidateTag("classes");
+    revalidatePath("/");
   } catch (error) {
     console.error("Error creating student:", error);
     return {
@@ -266,7 +264,6 @@ export async function updateStudent(
     const admittedAt = formData.get("admittedAt") as string;
     const classId = formData.get("classId") as string;
 
-    // Validasi field wajib
     if (!nis) {
       return {
         error: "NIS harus diisi.",
@@ -307,7 +304,6 @@ export async function updateStudent(
       };
     }
 
-    // Cek NIS yang sudah ada (kecuali milik siswa ini)
     const existingNis = await prisma.student.findUnique({
       where: {
         nis,
@@ -321,7 +317,6 @@ export async function updateStudent(
       };
     }
 
-    // Cek apakah kelas ada
     const existingClass = await prisma.class.findUnique({
       where: { id: classId, isDeleted: false },
     });
@@ -356,6 +351,9 @@ export async function updateStudent(
 
     revalidateTag("student");
     revalidateTag("students");
+    revalidateTag("class");
+    revalidatePath("/");
+    revalidateTag("classes");
   } catch (error) {
     console.error("Error updating student:", error);
     return {
@@ -387,6 +385,9 @@ export async function deleteStudent(id: string) {
 
     revalidateTag("students");
     revalidateTag("student");
+    revalidateTag("class");
+    revalidatePath("/");
+    revalidateTag("classes");
   } catch (error) {
     console.error("Error deleting student:", error);
     redirect(

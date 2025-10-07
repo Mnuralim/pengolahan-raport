@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import type { Gender, Prisma, TeacherStatus } from "@prisma/client";
@@ -129,7 +129,6 @@ export async function createTeacher(
       };
     }
 
-    // Check for existing username
     const existingUsername = await prisma.teacher.findUnique({
       where: { username, isDeleted: false },
     });
@@ -140,7 +139,6 @@ export async function createTeacher(
       };
     }
 
-    // Check for existing mobile
     const existingMobile = await prisma.teacher.findUnique({
       where: { mobile, isDeleted: false },
     });
@@ -151,7 +149,6 @@ export async function createTeacher(
       };
     }
 
-    // Check for existing NIP if provided
     if (nip && nip.trim() !== "") {
       const existingNip = await prisma.teacher.findUnique({
         where: { nip: nip.trim(), isDeleted: false },
@@ -180,6 +177,7 @@ export async function createTeacher(
     });
 
     revalidateTag("teacher");
+    revalidatePath("/");
     revalidateTag("teachers");
   } catch (error) {
     console.error("Error creating teacher:", error);
@@ -246,7 +244,6 @@ export async function updateTeacher(
       };
     }
 
-    // Check for existing username (exclude current teacher)
     const existingUsername = await prisma.teacher.findFirst({
       where: {
         username,
@@ -261,7 +258,6 @@ export async function updateTeacher(
       };
     }
 
-    // Check for existing mobile (exclude current teacher)
     const existingMobile = await prisma.teacher.findFirst({
       where: {
         mobile,
@@ -276,7 +272,6 @@ export async function updateTeacher(
       };
     }
 
-    // Check for existing NIP if provided (exclude current teacher)
     if (nip && nip.trim() !== "") {
       const existingNip = await prisma.teacher.findFirst({
         where: {
@@ -321,6 +316,7 @@ export async function updateTeacher(
       data: updateData,
     });
 
+    revalidatePath("/");
     revalidateTag("teacher");
     revalidateTag("teachers");
   } catch (error) {
@@ -353,6 +349,7 @@ export async function deleteTeacher(id: string) {
       },
     });
     revalidateTag("teachers");
+    revalidatePath("/");
     revalidateTag("teacher");
   } catch (error) {
     console.error("Error deleting teacher:", error);
