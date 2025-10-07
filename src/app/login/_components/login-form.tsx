@@ -17,7 +17,7 @@ export const LoginForm = () => {
       <div className="px-8 py-6 border-b border-slate-100">
         <div className="flex justify-center">
           <div className="flex items-center gap-3">
-            <Image src={"/logo1.png"} width={80} height={80} alt={"logo"} />
+            <Image src={"/logo.png"} width={80} height={80} alt={"logo"} />
             <h1 className="text-lg font-semibold text-slate-800">
               TK Negeri Wakeakea
             </h1>

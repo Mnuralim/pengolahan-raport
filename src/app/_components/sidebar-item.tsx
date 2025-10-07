@@ -162,7 +162,7 @@ export function SidebarItem({ className = "", username }: SidebarProps) {
           <div className="flex my-5 items-center justify-between lg:justify-center h-16 px-3 border-b border-slate-100">
             <span className="w-5 lg:hidden"></span>
             <div className="flex items-center gap-3 mt-5 justify-center">
-              <Image src={"/logo1.png"} width={80} height={80} alt={"logo"} />
+              <Image src={"/logo.png"} width={80} height={80} alt={"logo"} />
             </div>
             <button
               onClick={toggleSidebar}
