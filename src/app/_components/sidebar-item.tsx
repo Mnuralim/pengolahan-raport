@@ -13,17 +13,24 @@ import {
   GraduationCap,
   School,
   Printer,
+  PencilIcon,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { logout } from "@/actions/auth";
+import type { Role } from "@prisma/client";
 
 interface SidebarProps {
   className?: string;
   username?: string;
+  role?: Role;
 }
 
-export function SidebarItem({ className = "", username }: SidebarProps) {
+export function SidebarItem({
+  className = "",
+  username,
+  role = "GURU",
+}: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathName = usePathname();
   const [isMounted, setIsMounted] = useState(false);
@@ -93,34 +100,49 @@ export function SidebarItem({ className = "", username }: SidebarProps) {
       name: "Dashboard",
       icon: <Home className="w-5 h-5" />,
       href: "/",
+      roles: ["KEPALA_SEKOLAH", "GURU"] as Role[],
     },
     {
       name: "Aspek Perkembangan",
       icon: <TrendingUp className="w-5 h-5" />,
       href: "/development-aspects",
+      roles: ["GURU"] as Role[],
     },
     {
       name: "Daftar Guru",
       icon: <Users className="w-5 h-5" />,
       href: "/teachers",
+      roles: ["KEPALA_SEKOLAH"] as Role[],
     },
     {
       name: "Daftar Kelas",
       icon: <School className="w-5 h-5" />,
       href: "/classes",
+      roles: ["GURU"] as Role[],
     },
     {
       name: "Daftar Siswa",
       icon: <GraduationCap className="w-5 h-5" />,
       href: "/students",
+      roles: ["GURU", "KEPALA_SEKOLAH"] as Role[],
     },
-
+    {
+      name: "Penilaian Perkembangan",
+      icon: <PencilIcon className="w-5 h-5" />,
+      href: "/assessments",
+      roles: ["GURU", "KEPALA_SEKOLAH"] as Role[],
+    },
     {
       name: "Cetak Raport",
       icon: <Printer className="w-5 h-5" />,
       href: "/prints",
+      roles: ["GURU", "KEPALA_SEKOLAH"] as Role[],
     },
   ];
+
+  const filteredMenuItems = menuItems.filter((item) =>
+    item.roles.includes(role)
+  );
 
   if (pathName === "/login") {
     return null;
@@ -182,10 +204,13 @@ export function SidebarItem({ className = "", username }: SidebarProps) {
                 <p className="text-sm text-slate-800 mt-1 font-medium">
                   {username || "Admin"}
                 </p>
+                <p className="text-xs text-slate-500 mt-0.5 capitalize">
+                  {role}
+                </p>
               </div>
             </div>
             <ul className="space-y-1 px-4">
-              {menuItems.map((item, index) => {
+              {filteredMenuItems.map((item, index) => {
                 const isActive =
                   pathName === item.href ||
                   (pathName.startsWith(item.href) && item.href !== "/");

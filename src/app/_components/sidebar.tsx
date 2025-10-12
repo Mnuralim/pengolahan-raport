@@ -7,7 +7,7 @@ export async function Sidebar() {
   const [user] = await Promise.all([getTeacher(session?.id || "")]);
   return (
     <>
-      <SidebarItem username={user?.name} />
+      <SidebarItem username={user?.name} role={user?.role} />
     </>
   );
 }

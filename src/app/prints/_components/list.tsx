@@ -1,7 +1,8 @@
 "use client";
-import { Eye, Printer } from "lucide-react";
+import { Printer, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import { Tabel, type TabelColumn } from "../../_components/tabel";
 import { Pagination } from "../../_components/pagination";
 import { Alert } from "../../_components/alert";
@@ -12,6 +13,11 @@ import type { Class } from "@prisma/client";
 
 const PDFDownloadLink = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+  { ssr: false }
+);
+
+const PDFViewer = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
   { ssr: false }
 );
 
@@ -31,9 +37,11 @@ export const ReportList = ({
   classes,
 }: Props) => {
   const router = useRouter();
+  const [previewStudent, setPreviewStudent] =
+    useState<StudentWithAssessments | null>(null);
 
   const handleCloseAlert = () => {
-    router.replace("/admin/reports", { scroll: false });
+    router.replace("/reports", { scroll: false });
   };
 
   const schoolInfo = {
@@ -77,33 +85,12 @@ export const ReportList = ({
       accessor: (item) => (
         <div className="flex items-center gap-2">
           <button
-            onClick={() => router.push(`/students/${item.id}`)}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-green-50 text-green-600 hover:bg-green-100 transition-colors duration-150 border border-green-200"
-            title="Lihat Detail"
+            onClick={() => setPreviewStudent(item)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors duration-150 border border-blue-200"
+            title="Preview Raport PDF"
           >
-            <Eye className="w-4 h-4" />
+            <Printer className="w-4 h-4" />
           </button>
-
-          <PDFDownloadLink
-            document={
-              <PAUDReportPDF
-                student={item}
-                semester={currentSemester}
-                academicYear={currentAcademicYear}
-                schoolInfo={schoolInfo}
-              />
-            }
-            fileName={generatePDFFileName(item)}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors duration-150 border border-red-200"
-          >
-            {({ loading }) => (
-              <span
-                title={loading ? "Generating PDF..." : "Download Raport PDF"}
-              >
-                <Printer className={`w-4 h-4 ${loading ? "opacity-50" : ""}`} />
-              </span>
-            )}
-          </PDFDownloadLink>
         </div>
       ),
     },
@@ -145,6 +132,66 @@ export const ReportList = ({
         type={alertType || "success"}
         autoClose
       />
+
+      {previewStudent && (
+        <div className="fixed inset-0 z-[90999999000] flex items-center justify-center backdrop-blur-sm shadow-2xl bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Preview Raport
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {previewStudent.name} - {previewStudent.nis}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <PDFDownloadLink
+                  document={
+                    <PAUDReportPDF
+                      student={previewStudent}
+                      semester={currentSemester}
+                      academicYear={currentAcademicYear}
+                      schoolInfo={schoolInfo}
+                    />
+                  }
+                  fileName={generatePDFFileName(previewStudent)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors duration-150"
+                >
+                  {({ loading }) => (
+                    <>
+                      <Printer className="w-4 h-4" />
+                      {loading ? "Generating..." : "Download PDF"}
+                    </>
+                  )}
+                </PDFDownloadLink>
+
+                <button
+                  onClick={() => setPreviewStudent(null)}
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors duration-150"
+                  title="Tutup Preview"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-hidden">
+              <PDFViewer
+                style={{ width: "100%", height: "100%" }}
+                showToolbar={true}
+              >
+                <PAUDReportPDF
+                  student={previewStudent}
+                  semester={currentSemester}
+                  academicYear={currentAcademicYear}
+                  schoolInfo={schoolInfo}
+                />
+              </PDFViewer>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

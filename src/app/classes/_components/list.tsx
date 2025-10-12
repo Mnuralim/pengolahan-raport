@@ -56,7 +56,7 @@ export const ClassList = ({
   };
 
   const handleCloseAlert = () => {
-    router.replace("/admin/classes", { scroll: false });
+    router.replace("/classes", { scroll: false });
   };
 
   const formatAgeGroup = (ageGroup: string) => {

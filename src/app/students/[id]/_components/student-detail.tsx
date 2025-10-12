@@ -290,7 +290,6 @@ export const StudentDetail = ({ student, indicators }: Props) => {
           </div>
         )}
 
-        {/* Tabs */}
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="border-b border-gray-200">
             <nav className="flex">

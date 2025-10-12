@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `teachers` ADD COLUMN `role` ENUM('GURU', 'KEPALA_SEKOLAH') NOT NULL DEFAULT 'GURU';

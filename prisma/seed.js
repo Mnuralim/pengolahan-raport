@@ -4,7 +4,7 @@ import { hash } from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function createAdmin() {
-  console.log("Seeding teacher...");
+  console.log("Seeding Kepala Sekolah...");
 
   const defaultTeacher = {
     username: process.env.TEACHER_USERNAME,
@@ -22,15 +22,16 @@ async function createAdmin() {
       data: {
         username: defaultTeacher.username,
         password: hashedPassword,
-        name: "Test Guru",
+        role: "KEPALA_SEKOLAH",
+        name: "Test Kepala Sekolah",
         address: "Jl. Contoh Alamat No. 123, Kota Contoh",
-        mobile: "081234567890",
+        mobile: "081234222220",
       },
     });
 
-    console.log("Teacher seeded successfully!");
+    console.log("Kepala Sekolah seeded successfully!");
   } else {
-    console.log("Teacher already exists. Skipping seeding.");
+    console.log("Kepala Sekolah already exists. Skipping seeding.");
   }
 }
 

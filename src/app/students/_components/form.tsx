@@ -275,7 +275,6 @@ export const StudentForm = ({
           </div>
         </div>
 
-        {/* Data Keluarga Section */}
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
           <div className="flex items-center mb-6">
             <Heart className="w-5 h-5 text-red-500 mr-2" />

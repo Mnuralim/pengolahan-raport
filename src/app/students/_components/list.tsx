@@ -49,7 +49,7 @@ export const StudentList = ({
   };
 
   const handleCloseAlert = () => {
-    router.replace("/admin/students", { scroll: false });
+    router.replace("/students", { scroll: false });
   };
 
   const formatGender = (gender: string) => {

@@ -518,6 +518,7 @@ export async function createBulkDevelopmentAssessments(
 
     revalidateTag("development-assessment");
     revalidateTag("development-assessments");
+    revalidateTag("students");
     revalidateTag("student");
     revalidatePath("/");
     revalidateTag("student-development-assessments");
@@ -670,7 +671,7 @@ export async function updateBulkDevelopmentAssessments(
         });
       }
     }
-
+    revalidateTag("students");
     revalidateTag("development-assessment");
     revalidateTag("development-assessments");
     revalidateTag("student");
