@@ -130,7 +130,7 @@ export function SidebarItem({
       name: "Penilaian Perkembangan",
       icon: <PencilIcon className="w-5 h-5" />,
       href: "/assessments",
-      roles: ["GURU", "KEPALA_SEKOLAH"] as Role[],
+      roles: ["GURU"] as Role[],
     },
     {
       name: "Cetak Raport",

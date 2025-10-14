@@ -110,14 +110,7 @@ export const StudentDetail = ({ student, indicators }: Props) => {
       return acc;
     }, {} as Record<string, DevelopmentAssessmentWithRelations[]>) || {};
 
-  const tabs = [
-    { id: "profile", label: "Profil", icon: User },
-    {
-      id: "assessments",
-      label: "Penilaian Perkembangan",
-      icon: ClipboardCheck,
-    },
-  ];
+  const tabs = [{ id: "profile", label: "Profil", icon: User }];
 
   return (
     <div>
@@ -221,7 +214,6 @@ export const StudentDetail = ({ student, indicators }: Props) => {
           </div>
         </div>
 
-        {/* Assessment Status Summary */}
         {activeTab === "assessments" && (
           <div className="bg-white rounded-lg border border-gray-200 mb-6 p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
