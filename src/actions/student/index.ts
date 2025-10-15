@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Gender, Prisma, Religion } from "@prisma/client";
+import { imagekit } from "@/lib/imagekit";
 
 export const getStudent = unstable_cache(
   async function getStudent(id: string) {
@@ -133,6 +134,7 @@ export async function createStudent(
     const academicYear = formData.get("academicYear") as string;
     const admittedAt = formData.get("admittedAt") as string;
     const classId = formData.get("classId") as string;
+    const profileImage = formData.get("profileImage") as File;
 
     const height = formData.get("height") as string;
     const weight = formData.get("weight") as string;
@@ -189,6 +191,20 @@ export async function createStudent(
       };
     }
 
+    let profileImageUrl: string | null = null;
+    if (profileImage && profileImage.size > 0) {
+      const imageArrayBuffer = await profileImage.arrayBuffer();
+      const imageBuffer = Buffer.from(imageArrayBuffer);
+      const uploadResponse = await imagekit.upload({
+        file: imageBuffer,
+        fileName: `student-${nis}-${Date.now()}.${profileImage.name
+          .split(".")
+          .pop()}`,
+        folder: "/sis/students/profiles",
+      });
+      profileImageUrl = uploadResponse.url;
+    }
+
     await prisma.$transaction(async (tx) => {
       const createdStudent = await tx.student.create({
         data: {
@@ -208,6 +224,7 @@ export async function createStudent(
           academicYear,
           admittedAt: admittedAt ? new Date(admittedAt) : null,
           classId,
+          imageUrl: profileImageUrl,
         },
       });
 
@@ -263,6 +280,7 @@ export async function updateStudent(
     const academicYear = formData.get("academicYear") as string;
     const admittedAt = formData.get("admittedAt") as string;
     const classId = formData.get("classId") as string;
+    const profileImage = formData.get("profileImage") as File;
 
     if (!nis) {
       return {
@@ -327,6 +345,20 @@ export async function updateStudent(
       };
     }
 
+    let profileImageUrl = existingStudent.imageUrl;
+    if (profileImage && profileImage.size > 0) {
+      const imageArrayBuffer = await profileImage.arrayBuffer();
+      const imageBuffer = Buffer.from(imageArrayBuffer);
+      const uploadResponse = await imagekit.upload({
+        file: imageBuffer,
+        fileName: `student-${nis}-${Date.now()}.${profileImage.name
+          .split(".")
+          .pop()}`,
+        folder: "/sis/students/profiles",
+      });
+      profileImageUrl = uploadResponse.url;
+    }
+
     await prisma.student.update({
       where: { id },
       data: {
@@ -346,6 +378,7 @@ export async function updateStudent(
         academicYear,
         admittedAt: admittedAt ? new Date(admittedAt) : null,
         classId,
+        imageUrl: profileImageUrl,
       },
     });
 

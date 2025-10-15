@@ -18,6 +18,7 @@ model Teacher {
   username  String        @unique
   password  String
   role      Role          @default(GURU)
+  imageUrl  String?
   isDeleted Boolean       @default(false) @map("is_deleted")
   deletedAt DateTime?     @map("deleted_at")
   createdAt DateTime      @default(now()) @map("created_at")
@@ -56,6 +57,7 @@ model Student {
   fatherOccupation String?   @map("father_occupation")
   motherOccupation String?   @map("mother_occupation")
   childOrder       Int?      @map("child_order")
+  imageUrl         String?
   status           String?   @map("status")
   academicYear     String    @map("academic_year")
   admittedAt       DateTime? @map("admitted_at")

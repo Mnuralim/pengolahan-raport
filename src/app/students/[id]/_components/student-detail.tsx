@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { calculateAge, formatDate } from "@/lib/utils";
 import { DevelopmentAssessmentBulkForm } from "./bulk-form";
+import Image from "next/image";
 
 interface DevelopmentAssessmentWithRelations extends DevelopmentAssessment {
   indicator: DevelopmentIndicator & {
@@ -180,8 +181,19 @@ export const StudentDetail = ({ student, indicators }: Props) => {
         <div className="bg-white rounded-lg border border-gray-200 mb-6">
           <div className="p-6">
             <div className="flex items-start gap-6">
-              <div className="w-20 h-20 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
-                <User className="w-10 h-10 text-gray-600" />
+              <div className="w-20 h-20 bg-red-500 rounded-lg border border-gray-200 flex items-center justify-center">
+                {student.imageUrl !== null ? (
+                  <Image
+                    src={student?.imageUrl}
+                    alt={student.name}
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover object-center"
+                    priority
+                  />
+                ) : (
+                  <User className="w-10 h-10 text-gray-600" />
+                )}
               </div>
               <div className="flex-1">
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">

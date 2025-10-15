@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { Edit, Plus, Trash2, User } from "lucide-react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Tabel, type TabelColumn } from "../../_components/tabel";
@@ -10,6 +10,7 @@ import { Modal } from "../../_components/modal";
 import { Alert } from "../../_components/alert";
 import type { Teacher } from "@prisma/client";
 import { TeacherForm } from "./form";
+import Image from "next/image";
 
 interface Props {
   alertType?: "success" | "error";
@@ -66,6 +67,22 @@ export const TeacherList = ({
       header: "No",
       accessor: "id",
       render: (_, index) => (index as number) + 1,
+    },
+    {
+      header: "Gambar",
+      accessor: (item) => item.imageUrl || "-",
+      render: (item) =>
+        item.imageUrl ? (
+          <Image
+            width={64}
+            height={64}
+            src={item.imageUrl}
+            alt={item.name}
+            className="w-16 h-16 object-cover rounded-full"
+          />
+        ) : (
+          <User className="w-16 h-16" />
+        ),
     },
     {
       header: "NIP",
@@ -134,7 +151,6 @@ export const TeacherList = ({
                     `Apakah Anda yakin ingin menghapus guru "${item.name}"?`
                   )
                 ) {
-                  // Submit the form if confirmed
                   e.currentTarget.form?.requestSubmit();
                 }
               }}

@@ -1,10 +1,11 @@
-import { Loader2, GraduationCap, Heart, Ruler } from "lucide-react";
+import { Loader2, GraduationCap, Heart, Ruler, Upload, X } from "lucide-react";
 import Form from "next/form";
-import React, { useActionState } from "react";
+import React, { useActionState, useState } from "react";
 import { ErrorMessage } from "../../_components/error-message";
 import type { Class } from "@prisma/client";
 import { createStudent, updateStudent } from "@/actions/student";
 import type { StudentWithClass } from "./list";
+import Image from "next/image";
 
 interface Props {
   modal: "add" | "edit";
@@ -26,10 +27,35 @@ export const StudentForm = ({
     }
   );
 
+  const [previewImage, setPreviewImage] = useState<string | null>(
+    selectedStudent?.imageUrl || null
+  );
+
   const formatDateForInput = (date: Date | string | null) => {
     if (!date) return "";
     const dateObj = typeof date === "string" ? new Date(date) : date;
     return dateObj.toISOString().split("T")[0];
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setPreviewImage(null);
+    const fileInput = document.getElementById(
+      "profileImage"
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
+    }
   };
 
   return (
@@ -52,6 +78,60 @@ export const StudentForm = ({
           defaultValue={selectedStudent?.id || ""}
         />
         <ErrorMessage message={state.error} />
+
+        {/* Profile Image Section */}
+        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div className="flex items-center mb-6">
+            <Upload className="w-5 h-5 text-purple-600 mr-2" />
+            <h3 className="text-lg font-semibold text-gray-900">Foto Profil</h3>
+          </div>
+
+          <div className="flex flex-col items-center space-y-4">
+            {previewImage ? (
+              <div className="relative">
+                <div className="relative w-40 h-40 rounded-full overflow-hidden border-4 border-gray-200">
+                  <Image
+                    src={previewImage}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="w-40 h-40 rounded-full border-4 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                <Upload className="w-12 h-12 text-gray-400" />
+              </div>
+            )}
+
+            <div className="w-full max-w-md">
+              <label
+                htmlFor="profileImage"
+                className="block text-sm font-medium text-gray-700 mb-2 text-center"
+              >
+                Upload Foto Profil
+              </label>
+              <input
+                type="file"
+                id="profileImage"
+                name="profileImage"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Format: JPG, PNG, atau GIF. Maksimal 5MB
+              </p>
+            </div>
+          </div>
+        </div>
 
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
           <div className="flex items-center mb-6">

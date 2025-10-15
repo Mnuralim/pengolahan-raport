@@ -1,9 +1,10 @@
-import { User, Loader2, Eye, EyeOff } from "lucide-react";
+import { User, Loader2, Eye, EyeOff, X } from "lucide-react";
 import Form from "next/form";
 import React, { useActionState, useState } from "react";
 import { ErrorMessage } from "../../_components/error-message";
 import type { Teacher } from "@prisma/client";
 import { createTeacher, updateTeacher } from "@/actions/teacher";
+import Image from "next/image";
 
 interface Props {
   modal: "add" | "edit";
@@ -20,9 +21,36 @@ export const TeacherForm = ({ modal, selectedTeacher, onClose }: Props) => {
   );
 
   const [showPassword, setShowPassword] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    selectedTeacher?.imageUrl || null
+  );
+  const [hasNewImage, setHasNewImage] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setHasNewImage(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview(null);
+    setHasNewImage(false);
+    const fileInput = document.getElementById(
+      "profileImage"
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
+    }
   };
 
   return (
@@ -160,6 +188,53 @@ export const TeacherForm = ({ modal, selectedTeacher, onClose }: Props) => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150 resize-none"
                 required
               />
+            </div>
+
+            <div className="md:col-span-2">
+              <label
+                htmlFor="profileImage"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Foto Profil
+              </label>
+
+              {imagePreview && (
+                <div className="mb-4 relative inline-block">
+                  <Image
+                    width={128}
+                    height={128}
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors duration-150 shadow-md"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  {modal === "edit" && !hasNewImage && (
+                    <span className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs text-center py-1 rounded-b-lg">
+                      Foto saat ini
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <input
+                type="file"
+                id="profileImage"
+                name="profileImage"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Format: JPG, PNG, atau JPEG (Maks. 5MB)
+                {modal === "edit" &&
+                  " - Kosongkan jika tidak ingin mengubah foto"}
+              </p>
             </div>
           </div>
         </div>

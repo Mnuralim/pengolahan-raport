@@ -5,6 +5,7 @@ import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import type { Gender, Prisma, TeacherStatus } from "@prisma/client";
+import { imagekit } from "@/lib/imagekit";
 
 export const getTeacher = unstable_cache(
   async function getTeacher(id: string) {
@@ -92,6 +93,7 @@ export async function createTeacher(
     const status = formData.get("status") as string;
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
+    const profileImage = formData.get("profileImage") as File;
 
     if (!name) {
       return {
@@ -163,6 +165,20 @@ export async function createTeacher(
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    let profileImageUrl: string | null = null;
+    if (profileImage && profileImage.size > 0) {
+      const imageArrayBuffer = await profileImage.arrayBuffer();
+      const imageBuffer = Buffer.from(imageArrayBuffer);
+      const uploadResponse = await imagekit.upload({
+        file: imageBuffer,
+        fileName: `teacher-${username}-${Date.now()}.${profileImage.name
+          .split(".")
+          .pop()}`,
+        folder: "/sis/teachers/profiles",
+      });
+      profileImageUrl = uploadResponse.url;
+    }
+
     await prisma.teacher.create({
       data: {
         nip: nip && nip.trim() !== "" ? nip.trim() : null,
@@ -173,6 +189,7 @@ export async function createTeacher(
         status: status as TeacherStatus,
         username,
         password: hashedPassword,
+        imageUrl: profileImageUrl,
       },
     });
 
@@ -203,6 +220,7 @@ export async function updateTeacher(
     const status = formData.get("status") as string;
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
+    const profileImage = formData.get("profileImage") as File;
 
     if (!name) {
       return {
@@ -288,6 +306,20 @@ export async function updateTeacher(
       }
     }
 
+    let profileImageUrl = existingTeacher.imageUrl;
+    if (profileImage && profileImage.size > 0) {
+      const imageArrayBuffer = await profileImage.arrayBuffer();
+      const imageBuffer = Buffer.from(imageArrayBuffer);
+      const uploadResponse = await imagekit.upload({
+        file: imageBuffer,
+        fileName: `teacher-${username}-${Date.now()}.${profileImage.name
+          .split(".")
+          .pop()}`,
+        folder: "/sis/teachers/profiles",
+      });
+      profileImageUrl = uploadResponse.url;
+    }
+
     const updateData: {
       nip?: string | null;
       name?: string;
@@ -297,6 +329,7 @@ export async function updateTeacher(
       status?: TeacherStatus;
       username?: string;
       password?: string;
+      imageUrl?: string | null;
     } = {
       nip: nip && nip.trim() !== "" ? nip.trim() : null,
       name,
@@ -305,6 +338,7 @@ export async function updateTeacher(
       address,
       status: status as TeacherStatus,
       username,
+      imageUrl: profileImageUrl,
     };
 
     if (password && password.trim() !== "") {
