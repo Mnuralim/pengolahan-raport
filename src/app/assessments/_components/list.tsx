@@ -93,14 +93,13 @@ export const AssessmentList = ({
         </div>
       </div>
       <FilterControlStudents
-        path="prints"
+        path="assessments"
         classes={classes}
         currentClassId={pagination.preserveParams!.classId as string}
         currentSearch={pagination.preserveParams!.search as string}
         currentSortOrder={pagination.preserveParams!.sortOrder as string}
       />
       <Tabel columns={tabel} data={reports} />
-
       <div className="mt-8">
         <Pagination
           currentPage={pagination.currentPage}

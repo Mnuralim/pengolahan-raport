@@ -32,7 +32,6 @@ export const FilterControlStudents = ({
         newParams.set("search", e.target.value);
       }
 
-      // Reset pagination when searching
       newParams.delete("skip");
 
       replace(`/${path}?${newParams.toString()}`, {

@@ -268,6 +268,8 @@ export async function createDevelopmentAssessment(
     revalidateTag("development-assessments");
     revalidateTag("student-development-assessments");
     revalidatePath("/");
+    revalidateTag("students");
+    revalidateTag("student");
   } catch (error) {
     console.error("Error creating development assessment:", error);
     return {
@@ -386,6 +388,8 @@ export async function updateDevelopmentAssessment(
     revalidateTag("development-assessment");
     revalidateTag("development-assessments");
     revalidatePath("/");
+    revalidateTag("students");
+    revalidateTag("student");
     revalidateTag("student-development-assessments");
   } catch (error) {
     console.error("Error updating development assessment:", error);
@@ -424,6 +428,8 @@ export async function deleteDevelopmentAssessment(id: string) {
 
     revalidateTag("development-assessments");
     revalidateTag("development-assessment");
+    revalidateTag("students");
+    revalidateTag("student");
     revalidatePath("/");
     revalidateTag("student-development-assessments");
   } catch (error) {
