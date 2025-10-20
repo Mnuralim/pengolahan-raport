@@ -536,7 +536,7 @@ export async function createBulkDevelopmentAssessments(
   }
 
   redirect(
-    `/students/${studentId}?success=1&message=Penilaian perkembangan berhasil ditambahkan.`
+    `/assesments?success=1&message=Penilaian perkembangan berhasil ditambahkan.`
   );
 }
 
@@ -695,7 +695,7 @@ export async function updateBulkDevelopmentAssessments(
     : "Penilaian perkembangan berhasil ditambahkan.";
 
   redirect(
-    `/students/${studentId}?success=1&message=${encodeURIComponent(
+    `/assesments/${studentId}?success=1&message=${encodeURIComponent(
       successMessage
     )}`
   );

@@ -43,7 +43,6 @@ export const DevelopmentAssessmentBulkForm = ({
   student,
   indicators = [],
 }: Props) => {
-  // Check if assessments already exist
   const existingAssessments = student.developmentAssessments;
   const hasExistingAssessments = existingAssessments!.length > 0;
   const isEditMode = hasExistingAssessments;
@@ -198,14 +197,7 @@ export const DevelopmentAssessmentBulkForm = ({
             ? "Edit penilaian perkembangan yang sudah ada"
             : "Isi penilaian untuk indikator perkembangan yang belum dinilai"}
         </p>
-        {isEditMode && (
-          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800">
-              <strong>Mode Edit:</strong> Anda sedang mengedit penilaian yang
-              sudah ada. Perubahan akan memperbarui data penilaian sebelumnya.
-            </p>
-          </div>
-        )}
+
         {!isEditMode && indicatorsToShow.length === 0 && (
           <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
             <p className="text-sm text-yellow-800">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, Eye, Plus, Trash2, Users } from "lucide-react";
+import { Edit, Eye, Plus, Trash2, User, Users } from "lucide-react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { StudentForm } from "./form";
@@ -11,6 +11,7 @@ import { Modal } from "../../_components/modal";
 import { Alert } from "../../_components/alert";
 import type { Class, Prisma } from "@prisma/client";
 import { FilterControlStudents } from "./filter-controll";
+import Image from "next/image";
 
 export type StudentWithClass = Prisma.StudentGetPayload<{
   include: { physicalDevelopments: true; class: true };
@@ -105,6 +106,22 @@ export const StudentList = ({
       header: "No",
       accessor: "id",
       render: (_, index) => (index as number) + 1,
+    },
+    {
+      header: "Foto",
+      accessor: (item) => item.imageUrl || "-",
+      render: (item) =>
+        item.imageUrl ? (
+          <Image
+            src={item.imageUrl}
+            alt={item.name}
+            width={50}
+            height={50}
+            className="rounded-full"
+          />
+        ) : (
+          <User className="w-16 h-16" />
+        ),
     },
     {
       header: "NIS",

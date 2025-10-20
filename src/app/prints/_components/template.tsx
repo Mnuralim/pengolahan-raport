@@ -37,9 +37,7 @@ const styles = StyleSheet.create({
   },
   header: {
     textAlign: "center",
-    marginBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomStyle: "solid",
+    marginBottom: 10,
     paddingBottom: 10,
   },
   headerWithLogo: {
@@ -77,6 +75,9 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 5,
     textTransform: "uppercase",
+    borderTopWidth: 2,
+    borderTopStyle: "solid",
+    paddingTop: 10,
   },
   semesterInfo: {
     fontSize: 10,

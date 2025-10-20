@@ -47,7 +47,7 @@ export const AssessmentList = ({
   };
 
   const handleCloseAlert = () => {
-    router.replace("/reports", { scroll: false });
+    router.replace("/assessments", { scroll: false });
   };
 
   const tabel: TabelColumn<StudentWithAssessments>[] = [
