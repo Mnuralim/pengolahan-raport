@@ -53,6 +53,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
+    marginLeft: "-75px",
   },
   title: {
     fontSize: 14,

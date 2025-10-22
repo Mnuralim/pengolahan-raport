@@ -17,7 +17,7 @@ interface Props {
   }>;
 }
 
-export default async function ClassPage({ searchParams }: Props) {
+export default async function AssessmentPage({ searchParams }: Props) {
   const {
     success,
     message,

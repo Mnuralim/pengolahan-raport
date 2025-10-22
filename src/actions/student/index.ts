@@ -41,7 +41,8 @@ export const getAllStudents = unstable_cache(
     sortBy: string,
     sortOrder: string,
     search?: string,
-    classId?: string
+    classId?: string,
+    semester?: string
   ) {
     const where: Prisma.StudentWhereInput = {
       isDeleted: false,
@@ -87,6 +88,11 @@ export const getAllStudents = unstable_cache(
           class: true,
           physicalDevelopments: true,
           developmentAssessments: {
+            where: semester
+              ? {
+                  semester: parseInt(semester),
+                }
+              : undefined,
             include: {
               indicator: {
                 include: {

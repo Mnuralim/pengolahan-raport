@@ -13,10 +13,11 @@ interface Props {
     sortOrder?: string;
     search?: string;
     classId?: string;
+    semester?: string;
   }>;
 }
 
-export default async function ClassPage({ searchParams }: Props) {
+export default async function PrintsPage({ searchParams }: Props) {
   const {
     success,
     message,
@@ -27,7 +28,9 @@ export default async function ClassPage({ searchParams }: Props) {
     sortOrder,
     classId,
     search,
+    semester,
   } = await searchParams;
+
   const [studentResult, classResult] = await Promise.all([
     getAllStudents(
       skip || "0",
@@ -35,7 +38,8 @@ export default async function ClassPage({ searchParams }: Props) {
       sortBy || "name",
       sortOrder || "desc",
       search,
-      classId
+      classId,
+      semester || "1"
     ),
     getAllClasses("0", "100", "createdAt", "desc"),
   ]);
@@ -71,6 +75,7 @@ export default async function ClassPage({ searchParams }: Props) {
               sortOrder,
               search,
               classId,
+              semester,
             },
           }}
           alertType={success ? "success" : error ? "error" : undefined}

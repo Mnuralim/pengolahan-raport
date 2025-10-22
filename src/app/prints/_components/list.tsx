@@ -8,8 +8,8 @@ import { Pagination } from "../../_components/pagination";
 import { Alert } from "../../_components/alert";
 import type { StudentWithAssessments } from "@/app/students/[id]/_components/student-detail";
 import { PAUDReportPDF } from "./template";
-import { FilterControlStudents } from "@/app/students/_components/filter-controll";
 import type { Class } from "@prisma/client";
+import { FilterControlStudents } from "./filter";
 
 const PDFDownloadLink = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
@@ -53,7 +53,8 @@ export const ReportList = ({
     email: "tkwakeakea@gmail.com",
   };
 
-  const currentSemester = 1;
+  const currentSemester =
+    parseInt(pagination.preserveParams?.semester as string) || 1;
   const currentAcademicYear = "2024/2025";
 
   const generatePDFFileName = (student: StudentWithAssessments): string => {
@@ -112,6 +113,7 @@ export const ReportList = ({
         currentClassId={pagination.preserveParams!.classId as string}
         currentSearch={pagination.preserveParams!.search as string}
         currentSortOrder={pagination.preserveParams!.sortOrder as string}
+        currentSemester={pagination.preserveParams!.semester as string}
       />
       <Tabel columns={tabel} data={reports} />
 

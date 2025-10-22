@@ -30,16 +30,28 @@ interface Props {
     };
   }>;
   indicators?: DevelopmentIndicatorWithAspect[];
+  initialSemester?: number;
+  initialAcademicYear?: string;
 }
 
 export const DevelopmentAssessmentBulkForm = ({
   onClose,
   student,
   indicators = [],
+  initialSemester = 1,
+  initialAcademicYear = "2024/2025",
 }: Props) => {
-  const existingAssessments = student.developmentAssessments;
-  console.log("existingAssessments", existingAssessments);
-  const hasExistingAssessments = existingAssessments!.length > 0;
+  const [semester, setSemester] = useState<number>(initialSemester);
+  const [academicYear, setAcademicYear] = useState<string>(initialAcademicYear);
+
+  // Filter assessments based on selected semester and academic year
+  const existingAssessments = student.developmentAssessments.filter(
+    (assessment) =>
+      assessment.semester === semester &&
+      assessment.academicYear === academicYear
+  );
+
+  const hasExistingAssessments = existingAssessments.length > 0;
   const isEditMode = hasExistingAssessments;
 
   const [state, action, pending] = useActionState(
@@ -64,8 +76,15 @@ export const DevelopmentAssessmentBulkForm = ({
     >
   >({});
 
+  // Reset assessments when semester or academic year changes
   useEffect(() => {
-    if (isEditMode) {
+    const filteredAssessments = student.developmentAssessments.filter(
+      (assessment) =>
+        assessment.semester === semester &&
+        assessment.academicYear === academicYear
+    );
+
+    if (filteredAssessments.length > 0) {
       const existingData: Record<
         string,
         {
@@ -75,7 +94,7 @@ export const DevelopmentAssessmentBulkForm = ({
         }
       > = {};
 
-      existingAssessments!.forEach((assessment) => {
+      filteredAssessments.forEach((assessment) => {
         existingData[assessment.indicatorId] = {
           development: assessment.development,
           notes: assessment.notes || undefined,
@@ -85,18 +104,18 @@ export const DevelopmentAssessmentBulkForm = ({
 
       setAssessments(existingData);
 
-      if (
-        existingAssessments!.length > 0 &&
-        existingAssessments![0].assessmentDate
-      ) {
+      if (filteredAssessments[0].assessmentDate) {
         setAssessmentDate(
-          new Date(existingAssessments![0].assessmentDate)
+          new Date(filteredAssessments[0].assessmentDate)
             .toISOString()
             .split("T")[0]
         );
       }
+    } else {
+      setAssessments({});
+      setAssessmentDate("");
     }
-  }, [isEditMode, existingAssessments]);
+  }, [semester, academicYear, student.developmentAssessments]);
 
   const developmentLevelOptions: {
     value: DevelopmentLevel;
@@ -150,17 +169,20 @@ export const DevelopmentAssessmentBulkForm = ({
 
     formData.set("assessmentData", JSON.stringify(assessmentData));
     formData.set("isEditMode", isEditMode.toString());
+    formData.set("semester", semester.toString());
+    formData.set("academicYear", academicYear);
     action(formData);
   };
 
   const getFilledCount = () => {
     return Object.values(assessments).filter((a) => a.development).length;
   };
+
   const indicatorsToShow = isEditMode
     ? indicators
     : indicators.filter(
         (indicator) =>
-          !existingAssessments!.some(
+          !existingAssessments.some(
             (assessment) => assessment.indicatorId === indicator.id
           )
       );
@@ -196,7 +218,8 @@ export const DevelopmentAssessmentBulkForm = ({
           <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
               <strong>Mode Edit:</strong> Anda sedang mengedit penilaian yang
-              sudah ada. Perubahan akan memperbarui data penilaian sebelumnya.
+              sudah ada untuk Semester {semester} - Tahun Ajaran {academicYear}.
+              Perubahan akan memperbarui data penilaian sebelumnya.
             </p>
           </div>
         )}
@@ -204,7 +227,7 @@ export const DevelopmentAssessmentBulkForm = ({
           <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
             <p className="text-sm text-yellow-800">
               <strong>Semua indikator sudah dinilai:</strong> Semua indikator
-              perkembangan untuk siswa ini sudah memiliki penilaian. Gunakan
+              perkembangan untuk semester ini sudah memiliki penilaian. Gunakan
               tombol edit pada halaman detail untuk mengubah penilaian yang
               sudah ada.
             </p>
@@ -219,8 +242,8 @@ export const DevelopmentAssessmentBulkForm = ({
             Semua Indikator Sudah Dinilai
           </h3>
           <p className="text-sm text-gray-600 mb-6">
-            Tidak ada indikator yang perlu dinilai. Semua penilaian sudah
-            lengkap.
+            Tidak ada indikator yang perlu dinilai untuk semester ini. Semua
+            penilaian sudah lengkap.
           </p>
           <button
             onClick={onClose}
@@ -234,11 +257,12 @@ export const DevelopmentAssessmentBulkForm = ({
           <input type="hidden" name="studentId" value={selectedStudent} />
           <ErrorMessage message={state.error} />
 
+          {/* Informasi Siswa & Semester */}
           <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
             <div className="flex items-center mb-4">
               <User className="w-5 h-5 text-gray-400 mr-2" />
               <h3 className="text-lg font-medium text-gray-900">
-                Informasi Siswa
+                Informasi Siswa & Periode Penilaian
               </h3>
             </div>
 
@@ -274,14 +298,51 @@ export const DevelopmentAssessmentBulkForm = ({
                   type="date"
                   id="assessmentDate"
                   value={assessmentDate}
-                  disabled
                   onChange={(e) => setAssessmentDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150 bg-gray-100 cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="semester"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Semester *
+                </label>
+                <select
+                  id="semester"
+                  value={semester}
+                  onChange={(e) => setSemester(parseInt(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150"
+                  required
+                >
+                  <option value={1}>Semester 1</option>
+                  <option value={2}>Semester 2</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="academicYear"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Tahun Ajaran *
+                </label>
+                <input
+                  type="text"
+                  id="academicYear"
+                  value={academicYear}
+                  onChange={(e) => setAcademicYear(e.target.value)}
+                  placeholder="2024/2025"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150"
+                  required
                 />
               </div>
             </div>
           </div>
 
+          {/* Progress Bar */}
           <div
             className={`p-4 rounded-lg border ${
               isEditMode
@@ -295,7 +356,8 @@ export const DevelopmentAssessmentBulkForm = ({
               }`}
             >
               <span>
-                {isEditMode ? "Progress Edit:" : "Progress Penilaian:"}
+                {isEditMode ? "Progress Edit:" : "Progress Penilaian:"} Semester{" "}
+                {semester}
               </span>
               <span className="font-medium">
                 {getFilledCount()} dari {indicatorsToShow.length} indikator
@@ -319,6 +381,7 @@ export const DevelopmentAssessmentBulkForm = ({
             </div>
           </div>
 
+          {/* Assessment Forms */}
           <div className="space-y-6">
             {Object.entries(groupedIndicatorsToShow).map(
               ([aspectName, aspectIndicators]) => (
@@ -428,6 +491,7 @@ export const DevelopmentAssessmentBulkForm = ({
             )}
           </div>
 
+          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
             <button
               onClick={onClose}
@@ -441,6 +505,8 @@ export const DevelopmentAssessmentBulkForm = ({
               disabled={
                 pending ||
                 !selectedStudent ||
+                !semester ||
+                !academicYear ||
                 indicatorsToShow.length === 0 ||
                 getFilledCount() === 0
               }

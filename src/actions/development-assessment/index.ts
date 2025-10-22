@@ -183,104 +183,106 @@ export const getStudentDevelopmentAssessments = unstable_cache(
   }
 );
 
-export async function createDevelopmentAssessment(
-  prevState: FormState,
-  formData: FormData
-): Promise<FormState> {
-  try {
-    const studentId = formData.get("studentId") as string;
-    const indicatorId = formData.get("indicatorId") as string;
-    const development = formData.get("development") as string;
-    const notes = formData.get("notes") as string;
-    const assessmentDate = formData.get("assessmentDate") as string;
+// export async function createDevelopmentAssessment(
+//   prevState: FormState,
+//   formData: FormData
+// ): Promise<FormState> {
+//   try {
+//     const studentId = formData.get("studentId") as string;
+//     const indicatorId = formData.get("indicatorId") as string;
+//     const development = formData.get("development") as string;
+//     const notes = formData.get("notes") as string;
+//     const assessmentDate = formData.get("assessmentDate") as string;
 
-    if (!studentId) {
-      return {
-        error: "Siswa harus dipilih.",
-      };
-    }
+//     if (!studentId) {
+//       return {
+//         error: "Siswa harus dipilih.",
+//       };
+//     }
 
-    if (!indicatorId) {
-      return {
-        error: "Indikator perkembangan harus dipilih.",
-      };
-    }
+//     if (!indicatorId) {
+//       return {
+//         error: "Indikator perkembangan harus dipilih.",
+//       };
+//     }
 
-    if (!development) {
-      return {
-        error: "Tingkat perkembangan harus dipilih.",
-      };
-    }
+//     if (!development) {
+//       return {
+//         error: "Tingkat perkembangan harus dipilih.",
+//       };
+//     }
 
-    const existingStudent = await prisma.student.findUnique({
-      where: {
-        id: studentId,
-        isDeleted: false,
-      },
-    });
+//     const existingStudent = await prisma.student.findUnique({
+//       where: {
+//         id: studentId,
+//         isDeleted: false,
+//       },
+//     });
 
-    if (!existingStudent) {
-      return {
-        error: "Siswa tidak ditemukan atau sudah tidak aktif.",
-      };
-    }
+//     if (!existingStudent) {
+//       return {
+//         error: "Siswa tidak ditemukan atau sudah tidak aktif.",
+//       };
+//     }
 
-    const existingIndicator = await prisma.developmentIndicator.findUnique({
-      where: {
-        id: indicatorId,
-        isDeleted: false,
-      },
-    });
+//     const existingIndicator = await prisma.developmentIndicator.findUnique({
+//       where: {
+//         id: indicatorId,
+//         isDeleted: false,
+//       },
+//     });
 
-    if (!existingIndicator) {
-      return {
-        error: "Indikator perkembangan tidak ditemukan atau sudah tidak aktif.",
-      };
-    }
+//     if (!existingIndicator) {
+//       return {
+//         error: "Indikator perkembangan tidak ditemukan atau sudah tidak aktif.",
+//       };
+//     }
 
-    const existingAssessment = await prisma.developmentAssessment.findUnique({
-      where: {
-        studentId_indicatorId: {
-          studentId,
-          indicatorId,
-        },
-        isDeleted: false,
-      },
-    });
+//     const existingAssessment = await prisma.developmentAssessment.findUnique({
+//       where: {
+//         studentId_indicatorId_semester_academicYear: {
+//           studentId,
+//           indicatorId,
+//           semester: existingIndicator.,
+//           academicYear: existingIndicator.academicYear,
+//         },
+//         isDeleted: false,
+//       },
+//     });
 
-    if (existingAssessment) {
-      return {
-        error: "Penilaian untuk siswa dan indikator ini sudah ada.",
-      };
-    }
+//     if (existingAssessment) {
+//       return {
+//         error: "Penilaian untuk siswa dan indikator ini sudah ada.",
+//       };
+//     }
 
-    await prisma.developmentAssessment.create({
-      data: {
-        studentId,
-        indicatorId,
-        development: development as DevelopmentLevel,
-        notes: notes || null,
-        assessmentDate: assessmentDate ? new Date(assessmentDate) : null,
-      },
-    });
+//     await prisma.developmentAssessment.create({
+//       data: {
+//         studentId,
+//         indicatorId,
+//         development: development as DevelopmentLevel,
+//         notes: notes || null,
+//         assessmentDate: assessmentDate ? new Date(assessmentDate) : null,
+//       },
+//     });
 
-    revalidateTag("development-assessment");
-    revalidateTag("development-assessments");
-    revalidateTag("student-development-assessments");
-    revalidatePath("/");
-    revalidateTag("students");
-    revalidateTag("student");
-  } catch (error) {
-    console.error("Error creating development assessment:", error);
-    return {
-      error: "Terjadi kesalahan saat menambahkan penilaian perkembangan.",
-    };
-  }
+//     revalidateTag("development-assessment");
+//     revalidateTag("development-assessments");
+//     revalidateTag("student-development-assessments");
+//     revalidatePath("/");
+//     revalidateTag("students");
+//     revalidateTag("student");
+//   } catch (error) {
+//     console.error("Error creating development assessment:", error);
+//     return {
+//       error: "Terjadi kesalahan saat menambahkan penilaian perkembangan.",
+//     };
+//   }
 
-  redirect(
-    `/development-assessments?success=1&message=Penilaian perkembangan berhasil ditambahkan.`
-  );
-}
+//   redirect(
+//     `/development-assessments?success=1&message=Penilaian perkembangan berhasil ditambahkan.`
+//   );
+// }
 
 export async function updateDevelopmentAssessment(
   prevState: FormState,
@@ -358,9 +360,11 @@ export async function updateDevelopmentAssessment(
       const duplicateAssessment = await prisma.developmentAssessment.findUnique(
         {
           where: {
-            studentId_indicatorId: {
+            studentId_indicatorId_semester_academicYear: {
               studentId,
               indicatorId,
+              academicYear: existingAssessment.academicYear,
+              semester: existingAssessment.semester,
             },
             isDeleted: false,
           },
@@ -449,6 +453,8 @@ export async function createBulkDevelopmentAssessments(
   formData: FormData
 ): Promise<FormState> {
   const studentId = formData.get("studentId") as string;
+  const semester = parseInt(formData.get("semester") as string);
+  const academicYear = formData.get("academicYear") as string;
 
   try {
     const assessmentData = formData.get("assessmentData") as string;
@@ -456,6 +462,18 @@ export async function createBulkDevelopmentAssessments(
     if (!studentId) {
       return {
         error: "Siswa harus dipilih.",
+      };
+    }
+
+    if (!semester || ![1, 2].includes(semester)) {
+      return {
+        error: "Semester harus dipilih (1 atau 2).",
+      };
+    }
+
+    if (!academicYear) {
+      return {
+        error: "Tahun ajaran harus diisi.",
       };
     }
 
@@ -488,17 +506,19 @@ export async function createBulkDevelopmentAssessments(
     }
 
     const assessmentsToCreate = [];
+
     for (const item of parsedData) {
       if (!item.indicatorId || !item.development) {
         continue;
       }
 
-      const existing = await prisma.developmentAssessment.findUnique({
+      // Check if assessment already exists for this semester and academic year
+      const existing = await prisma.developmentAssessment.findFirst({
         where: {
-          studentId_indicatorId: {
-            studentId,
-            indicatorId: item.indicatorId,
-          },
+          studentId,
+          indicatorId: item.indicatorId,
+          semester,
+          academicYear,
           isDeleted: false,
         },
       });
@@ -512,6 +532,8 @@ export async function createBulkDevelopmentAssessments(
           assessmentDate: item.assessmentDate
             ? new Date(item.assessmentDate)
             : null,
+          semester,
+          academicYear,
         });
       }
     }
@@ -520,6 +542,11 @@ export async function createBulkDevelopmentAssessments(
       await prisma.developmentAssessment.createMany({
         data: assessmentsToCreate,
       });
+    } else {
+      return {
+        error:
+          "Tidak ada penilaian baru yang perlu ditambahkan. Semua indikator sudah dinilai untuk semester ini.",
+      };
     }
 
     revalidateTag("development-assessment");
@@ -535,8 +562,12 @@ export async function createBulkDevelopmentAssessments(
     };
   }
 
+  const successMessage = `Penilaian perkembangan semester ${semester} berhasil ditambahkan.`;
+
   redirect(
-    `/assesments?success=1&message=Penilaian perkembangan berhasil ditambahkan.`
+    `/assesments/${studentId}?success=1&message=${encodeURIComponent(
+      successMessage
+    )}`
   );
 }
 
@@ -546,6 +577,8 @@ export async function updateBulkDevelopmentAssessments(
 ): Promise<FormState> {
   const isEditMode = formData.get("isEditMode") === "true";
   const studentId = formData.get("studentId") as string;
+  const semester = parseInt(formData.get("semester") as string);
+  const academicYear = formData.get("academicYear") as string;
 
   try {
     const assessmentData = formData.get("assessmentData") as string;
@@ -553,6 +586,18 @@ export async function updateBulkDevelopmentAssessments(
     if (!studentId) {
       return {
         error: "Siswa harus dipilih.",
+      };
+    }
+
+    if (!semester || ![1, 2].includes(semester)) {
+      return {
+        error: "Semester harus dipilih (1 atau 2).",
+      };
+    }
+
+    if (!academicYear) {
+      return {
+        error: "Tahun ajaran harus diisi.",
       };
     }
 
@@ -605,18 +650,20 @@ export async function updateBulkDevelopmentAssessments(
                 assessmentDate: item.assessmentDate
                   ? new Date(item.assessmentDate)
                   : null,
+                semester,
+                academicYear,
                 updatedAt: new Date(),
               },
             })
           );
         } else {
           const existingAssessment =
-            await prisma.developmentAssessment.findUnique({
+            await prisma.developmentAssessment.findFirst({
               where: {
-                studentId_indicatorId: {
-                  studentId,
-                  indicatorId: item.indicatorId,
-                },
+                studentId,
+                indicatorId: item.indicatorId,
+                semester,
+                academicYear,
                 isDeleted: false,
               },
             });
@@ -632,6 +679,8 @@ export async function updateBulkDevelopmentAssessments(
                   assessmentDate: item.assessmentDate
                     ? new Date(item.assessmentDate)
                     : null,
+                  semester,
+                  academicYear,
                 },
               })
             );
@@ -648,12 +697,12 @@ export async function updateBulkDevelopmentAssessments(
           continue;
         }
 
-        const existing = await prisma.developmentAssessment.findUnique({
+        const existing = await prisma.developmentAssessment.findFirst({
           where: {
-            studentId_indicatorId: {
-              studentId,
-              indicatorId: item.indicatorId,
-            },
+            studentId,
+            indicatorId: item.indicatorId,
+            semester,
+            academicYear,
             isDeleted: false,
           },
         });
@@ -667,6 +716,8 @@ export async function updateBulkDevelopmentAssessments(
             assessmentDate: item.assessmentDate
               ? new Date(item.assessmentDate)
               : null,
+            semester,
+            academicYear,
           });
         }
       }
@@ -677,6 +728,7 @@ export async function updateBulkDevelopmentAssessments(
         });
       }
     }
+
     revalidateTag("students");
     revalidateTag("development-assessment");
     revalidateTag("development-assessments");
@@ -691,8 +743,8 @@ export async function updateBulkDevelopmentAssessments(
   }
 
   const successMessage = isEditMode
-    ? "Penilaian perkembangan berhasil diperbarui."
-    : "Penilaian perkembangan berhasil ditambahkan.";
+    ? `Penilaian perkembangan semester ${semester} berhasil diperbarui.`
+    : `Penilaian perkembangan semester ${semester} berhasil ditambahkan.`;
 
   redirect(
     `/assesments/${studentId}?success=1&message=${encodeURIComponent(

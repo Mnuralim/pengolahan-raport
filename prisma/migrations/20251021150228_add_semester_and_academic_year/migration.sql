@@ -108,15 +108,20 @@ CREATE TABLE `development_assessments` (
     `studentId` VARCHAR(191) NOT NULL,
     `indicatorId` VARCHAR(191) NOT NULL,
     `development` ENUM('BAIK', 'CUKUP', 'PERLU_DILATIH') NOT NULL DEFAULT 'BAIK',
-    `notes` VARCHAR(191) NULL,
+    `notes` TEXT NULL,
     `assessment_date` DATETIME(3) NULL,
+    `semester` INTEGER NOT NULL DEFAULT 1,
+    `academic_year` VARCHAR(191) NOT NULL DEFAULT '2024/2025',
     `is_deleted` BOOLEAN NOT NULL DEFAULT false,
     `deleted_at` DATETIME(3) NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `development_assessments_id_key`(`id`),
-    UNIQUE INDEX `development_assessments_studentId_indicatorId_key`(`studentId`, `indicatorId`),
+    INDEX `idx_dev_assessment_student`(`studentId`),
+    INDEX `idx_dev_assessment_indicator`(`indicatorId`),
+    INDEX `idx_dev_assessment_semester`(`semester`),
+    UNIQUE INDEX `unique_student_indicator_semester_year`(`studentId`, `indicatorId`, `semester`, `academic_year`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -167,10 +172,10 @@ ALTER TABLE `classes` ADD CONSTRAINT `classes_teacherId_fkey` FOREIGN KEY (`teac
 ALTER TABLE `development_indicators` ADD CONSTRAINT `development_indicators_aspectId_fkey` FOREIGN KEY (`aspectId`) REFERENCES `development_aspects`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `development_assessments` ADD CONSTRAINT `development_assessments_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `development_assessments` ADD CONSTRAINT `dev_assessment_student_fk` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `development_assessments` ADD CONSTRAINT `development_assessments_indicatorId_fkey` FOREIGN KEY (`indicatorId`) REFERENCES `development_indicators`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `development_assessments` ADD CONSTRAINT `dev_assessment_indicator_fk` FOREIGN KEY (`indicatorId`) REFERENCES `development_indicators`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `physical_developments` ADD CONSTRAINT `physical_developments_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `students`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
