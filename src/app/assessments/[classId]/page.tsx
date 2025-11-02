@@ -1,6 +1,7 @@
-import { getAllTeachers } from "@/actions/teacher";
-import { ClassList } from "./_components/list";
+import { getAllStudents } from "@/actions/student";
 import { getAllClasses } from "@/actions/class";
+import { AssessmentList } from "./_components/list";
+import { getAllDevelopmentIndicators } from "@/actions/development-aspect";
 
 interface Props {
   searchParams: Promise<{
@@ -11,20 +12,34 @@ interface Props {
     skip?: string;
     sortBy?: string;
     sortOrder?: string;
+    search?: string;
+    classId?: string;
   }>;
 }
 
-export default async function ClassPage({ searchParams }: Props) {
-  const { success, message, error, limit, skip, sortBy, sortOrder } =
-    await searchParams;
-  const [classResult, teacherResult] = await Promise.all([
-    getAllClasses(
+export default async function AssessmentPage({ searchParams }: Props) {
+  const {
+    success,
+    message,
+    error,
+    limit,
+    skip,
+    sortBy,
+    sortOrder,
+    classId,
+    search,
+  } = await searchParams;
+  const [studentResult, classResult, indicatorsResult] = await Promise.all([
+    getAllStudents(
       skip || "0",
       limit || "10",
       sortBy || "name",
-      sortOrder || "desc"
+      sortOrder || "desc",
+      search,
+      classId
     ),
-    getAllTeachers("0", "100", "createdAt", "desc"),
+    getAllClasses("0", "100", "createdAt", "desc"),
+    getAllDevelopmentIndicators(),
   ]);
 
   return (
@@ -43,17 +58,22 @@ export default async function ClassPage({ searchParams }: Props) {
       </div>
 
       <div className="p-6">
-        <ClassList
-          teachers={teacherResult.teachers}
+        <AssessmentList
+          indicators={indicatorsResult}
           classes={classResult.classes}
+          reports={studentResult.students}
           pagination={{
-            currentPage: classResult.currentPage,
-            itemsPerPage: classResult.itemsPerPage,
-            totalItems: classResult.totalCount,
-            totalPages: classResult.totalPages,
+            currentPage: studentResult.currentPage,
+            itemsPerPage: studentResult.itemsPerPage,
+            totalItems: studentResult.totalCount,
+            totalPages: studentResult.totalPages,
             preserveParams: {
               limit,
               skip,
+              sortBy,
+              sortOrder,
+              search,
+              classId,
             },
           }}
           alertType={success ? "success" : error ? "error" : undefined}
