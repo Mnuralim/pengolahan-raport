@@ -1,6 +1,5 @@
 import { getAllStudents } from "@/actions/student";
-import { AssessmentList } from "./_components/list";
-import { getAllDevelopmentIndicators } from "@/actions/development-aspect";
+import { ReportList } from "./_components/list";
 import type { Semester } from "@prisma/client";
 
 interface Props {
@@ -13,15 +12,15 @@ interface Props {
     sortBy?: string;
     sortOrder?: string;
     search?: string;
+    semester?: string;
     year?: string;
-    semester?: string | Semester;
   }>;
   params: Promise<{
-    classId: string;
+    classId?: string;
   }>;
 }
 
-export default async function AssessmentPage({ searchParams, params }: Props) {
+export default async function PrintsPage({ searchParams, params }: Props) {
   const {
     success,
     message,
@@ -34,17 +33,19 @@ export default async function AssessmentPage({ searchParams, params }: Props) {
     semester,
     year,
   } = await searchParams;
+
   const { classId } = await params;
-  const [studentResult, indicatorsResult] = await Promise.all([
+
+  const [studentResult] = await Promise.all([
     getAllStudents(
       skip || "0",
       limit || "10",
       sortBy || "name",
       sortOrder || "desc",
       search,
-      classId
+      classId,
+      semester || "SEMESTER_1"
     ),
-    getAllDevelopmentIndicators(),
   ]);
 
   return (
@@ -53,20 +54,19 @@ export default async function AssessmentPage({ searchParams, params }: Props) {
         <div className="flex items-center gap-3">
           <div>
             <h1 className="text-xl font-semibold text-slate-900">
-              Assessment Management
+              Prints Report Management
             </h1>
             <p className="text-sm text-slate-600 mt-1">
-              Kelola input nilai siswa disini
+              Kelola cetak rapot disini
             </p>
           </div>
         </div>
       </div>
 
       <div className="p-6">
-        <AssessmentList
-          semester={semester as Semester | undefined}
-          year={year}
-          indicators={indicatorsResult}
+        <ReportList
+          semester={semester as Semester}
+          year={year || "2025/2026"}
           reports={studentResult.students}
           pagination={{
             currentPage: studentResult.currentPage,
@@ -80,11 +80,12 @@ export default async function AssessmentPage({ searchParams, params }: Props) {
               sortOrder,
               search,
               classId,
+              semester,
+              year,
             },
           }}
           alertType={success ? "success" : error ? "error" : undefined}
           message={message}
-          classId={classId}
         />
       </div>
     </div>

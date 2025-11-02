@@ -9,18 +9,20 @@ import type {
   StudentWithAssessments,
 } from "@/app/students/[id]/_components/student-detail";
 import { FilterControlStudents } from "@/app/students/_components/filter-controll";
-import type { Class } from "@prisma/client";
 import { DevelopmentAssessmentBulkForm } from "./bulk-form";
 import { Modal } from "@/app/_components/modal";
 import { useState } from "react";
+import type { Semester } from "@prisma/client";
 
 interface Props {
   alertType?: "success" | "error";
   message?: string;
   reports: StudentWithAssessments[];
   pagination: PaginationProps;
-  classes: Class[];
   indicators: DevelopmentIndicatorWithAspect[];
+  year?: string;
+  semester?: Semester;
+  classId: string;
 }
 
 export const AssessmentList = ({
@@ -28,8 +30,10 @@ export const AssessmentList = ({
   reports,
   message,
   pagination,
-  classes,
   indicators,
+  semester,
+  year,
+  classId,
 }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(
@@ -47,7 +51,10 @@ export const AssessmentList = ({
   };
 
   const handleCloseAlert = () => {
-    router.replace("/assessments", { scroll: false });
+    router.replace(
+      `/assessments/${classId}?year=${year}&semester=${semester}`,
+      { scroll: false }
+    );
   };
 
   const tabel: TabelColumn<StudentWithAssessments>[] = [
@@ -88,14 +95,13 @@ export const AssessmentList = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold text-gray-900">
-            Input Penilaian Siswa
+            Input Penilaian Siswa {year} -{" "}
+            {semester === "SEMESTER_1" ? "Ganjil" : "Genap"}
           </h1>
         </div>
       </div>
       <FilterControlStudents
         path="assessments"
-        classes={classes}
-        currentClassId={pagination.preserveParams!.classId as string}
         currentSearch={pagination.preserveParams!.search as string}
         currentSortOrder={pagination.preserveParams!.sortOrder as string}
       />
@@ -121,6 +127,9 @@ export const AssessmentList = ({
       <Modal onClose={handleClose} isOpen={isModalOpen}>
         {isModalOpen && (
           <DevelopmentAssessmentBulkForm
+            classId={classId}
+            initialAcademicYear={year}
+            initialSemester={semester}
             onClose={handleClose}
             student={
               reports.find((student) => student.id === selectedStudentId)!

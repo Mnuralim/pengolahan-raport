@@ -42,7 +42,8 @@ export const getAllStudents = unstable_cache(
     sortOrder: string,
     search?: string,
     classId?: string,
-    semester?: string
+    semester?: string,
+    academicYear?: string
   ) {
     const where: Prisma.StudentWhereInput = {
       isDeleted: false,
@@ -67,6 +68,16 @@ export const getAllStudents = unstable_cache(
       where.classId = classId;
     }
 
+    const assessmentWhere: Prisma.DevelopmentAssessmentWhereInput = {};
+
+    if (semester) {
+      assessmentWhere.semester = semester as "SEMESTER_1" | "SEMESTER_2";
+    }
+
+    if (academicYear) {
+      assessmentWhere.academicYear = academicYear;
+    }
+
     const [totalCount, students] = await Promise.all([
       prisma.student.count({
         where: {
@@ -88,11 +99,10 @@ export const getAllStudents = unstable_cache(
           class: true,
           physicalDevelopments: true,
           developmentAssessments: {
-            where: semester
-              ? {
-                  semester: parseInt(semester),
-                }
-              : undefined,
+            where:
+              Object.keys(assessmentWhere).length > 0
+                ? assessmentWhere
+                : undefined,
             include: {
               indicator: {
                 include: {

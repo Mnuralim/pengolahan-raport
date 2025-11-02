@@ -98,18 +98,20 @@ export const FilterControlStudents = ({
         </div>
 
         <div className="grid gap-2 grid-cols-1 sm:grid-cols-3">
-          <select
-            onChange={handleFilterClass}
-            value={currentClassId || "all"}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="all">Semua Kelas</option>
-            {classes.map((classItem) => (
-              <option key={classItem.id} value={classItem.id}>
-                {classItem.name}
-              </option>
-            ))}
-          </select>
+          {classes.length === 0 ? null : (
+            <select
+              onChange={handleFilterClass}
+              value={currentClassId || "all"}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">Semua Kelas</option>
+              {classes.map((classItem) => (
+                <option key={classItem.id} value={classItem.id}>
+                  {classItem.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           <select
             onChange={handleSortBy}

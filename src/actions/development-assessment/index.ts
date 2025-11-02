@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import type { DevelopmentLevel, Prisma } from "@prisma/client";
+import type { DevelopmentLevel, Prisma, Semester } from "@prisma/client";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -453,7 +453,8 @@ export async function createBulkDevelopmentAssessments(
   formData: FormData
 ): Promise<FormState> {
   const studentId = formData.get("studentId") as string;
-  const semester = parseInt(formData.get("semester") as string);
+  const classId = formData.get("classId") as string;
+  const semester = formData.get("semester") as Semester;
   const academicYear = formData.get("academicYear") as string;
 
   try {
@@ -465,9 +466,9 @@ export async function createBulkDevelopmentAssessments(
       };
     }
 
-    if (!semester || ![1, 2].includes(semester)) {
+    if (!semester || !["SEMESTER_1", "SEMESTER_2"].includes(semester)) {
       return {
-        error: "Semester harus dipilih (1 atau 2).",
+        error: "Semester harus dipilih (Semester 1 atau Semester 2 ).",
       };
     }
 
@@ -565,7 +566,7 @@ export async function createBulkDevelopmentAssessments(
   const successMessage = `Penilaian perkembangan semester ${semester} berhasil ditambahkan.`;
 
   redirect(
-    `/assesments/${studentId}?success=1&message=${encodeURIComponent(
+    `/assessments/${classId}?semester=${semester}&year=${academicYear}&success=1&message=${encodeURIComponent(
       successMessage
     )}`
   );
@@ -576,9 +577,12 @@ export async function updateBulkDevelopmentAssessments(
   formData: FormData
 ): Promise<FormState> {
   const isEditMode = formData.get("isEditMode") === "true";
+  const classId = formData.get("classId") as string;
   const studentId = formData.get("studentId") as string;
-  const semester = parseInt(formData.get("semester") as string);
+  const semester = formData.get("semester") as Semester;
   const academicYear = formData.get("academicYear") as string;
+
+  console.log("semester", semester);
 
   try {
     const assessmentData = formData.get("assessmentData") as string;
@@ -589,9 +593,9 @@ export async function updateBulkDevelopmentAssessments(
       };
     }
 
-    if (!semester || ![1, 2].includes(semester)) {
+    if (!semester || !["SEMESTER_1", "SEMESTER_2"].includes(semester)) {
       return {
-        error: "Semester harus dipilih (1 atau 2).",
+        error: "Semester harus dipilih (Semester 1 atau Semester 2 ).",
       };
     }
 
@@ -747,7 +751,7 @@ export async function updateBulkDevelopmentAssessments(
     : `Penilaian perkembangan semester ${semester} berhasil ditambahkan.`;
 
   redirect(
-    `/assesments/${studentId}?success=1&message=${encodeURIComponent(
+    `/assessments/${classId}?semester=${semester}&year=${academicYear}&success=1&message=${encodeURIComponent(
       successMessage
     )}`
   );

@@ -9,10 +9,11 @@ import {
 } from "@react-pdf/renderer";
 import type { StudentWithAssessments } from "@/app/students/[id]/_components/student-detail";
 import { formatDate } from "@/lib/utils";
+import type { Semester } from "@prisma/client";
 
 interface PAUDReportPDFProps {
   student: StudentWithAssessments;
-  semester: number;
+  semester: Semester;
   academicYear: string;
   schoolInfo: {
     name: string;
@@ -326,7 +327,8 @@ export const PAUDReportPDF: React.FC<PAUDReportPDFProps> = ({
             PERKEMBANGAN ANAK DIDIK USIA 4 - 5 TAHUN
           </Text>
           <Text style={styles.semesterInfo}>
-            SEMESTER {semester} TAHUN PELAJARAN {academicYear}
+            SEMESTER {semester === "SEMESTER_1" ? "I" : "II"} TAHUN PELAJARAN{" "}
+            {academicYear}
           </Text>
         </View>
 
@@ -499,7 +501,8 @@ export const PAUDReportPDF: React.FC<PAUDReportPDFProps> = ({
             PERKEMBANGAN ANAK DIDIK USIA 4 - 5 TAHUN
           </Text>
           <Text style={styles.semesterInfo}>
-            SEMESTER {semester} TAHUN PELAJARAN {academicYear}
+            SEMESTER {semester === "SEMESTER_1" ? "I" : "II"} TAHUN PELAJARAN{" "}
+            {academicYear}
           </Text>
         </View>
 

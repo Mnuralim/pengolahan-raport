@@ -1,5 +1,4 @@
-import { getAllStudents } from "@/actions/student";
-import { ReportList } from "./_components/list";
+import { ClassList } from "./_components/list";
 import { getAllClasses } from "@/actions/class";
 
 interface Props {
@@ -11,37 +10,19 @@ interface Props {
     skip?: string;
     sortBy?: string;
     sortOrder?: string;
-    search?: string;
-    classId?: string;
-    semester?: string;
   }>;
 }
 
 export default async function PrintsPage({ searchParams }: Props) {
-  const {
-    success,
-    message,
-    error,
-    limit,
-    skip,
-    sortBy,
-    sortOrder,
-    classId,
-    search,
-    semester,
-  } = await searchParams;
-
-  const [studentResult, classResult] = await Promise.all([
-    getAllStudents(
+  const { success, message, error, limit, skip, sortBy, sortOrder } =
+    await searchParams;
+  const [classResult] = await Promise.all([
+    getAllClasses(
       skip || "0",
       limit || "10",
       sortBy || "name",
-      sortOrder || "desc",
-      search,
-      classId,
-      semester || "1"
+      sortOrder || "desc"
     ),
-    getAllClasses("0", "100", "createdAt", "desc"),
   ]);
 
   return (
@@ -60,22 +41,16 @@ export default async function PrintsPage({ searchParams }: Props) {
       </div>
 
       <div className="p-6">
-        <ReportList
+        <ClassList
           classes={classResult.classes}
-          reports={studentResult.students}
           pagination={{
-            currentPage: studentResult.currentPage,
-            itemsPerPage: studentResult.itemsPerPage,
-            totalItems: studentResult.totalCount,
-            totalPages: studentResult.totalPages,
+            currentPage: classResult.currentPage,
+            itemsPerPage: classResult.itemsPerPage,
+            totalItems: classResult.totalCount,
+            totalPages: classResult.totalPages,
             preserveParams: {
               limit,
               skip,
-              sortBy,
-              sortOrder,
-              search,
-              classId,
-              semester,
             },
           }}
           alertType={success ? "success" : error ? "error" : undefined}

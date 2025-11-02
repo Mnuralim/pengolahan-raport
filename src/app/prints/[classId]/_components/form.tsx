@@ -1,10 +1,10 @@
 import { GraduationCap, Loader2, Users } from "lucide-react";
 import Form from "next/form";
 import React, { useActionState } from "react";
-import { ErrorMessage } from "../../_components/error-message";
+import { ErrorMessage } from "../../../_components/error-message";
 import type { Teacher, AgeGroup } from "@prisma/client";
 import { createClass, updateClass } from "@/actions/class";
-import type { ClassWithRelations } from "./list";
+import type { ClassWithRelations } from "@/app/classes/_components/list";
 
 interface Props {
   modal: "add" | "edit";

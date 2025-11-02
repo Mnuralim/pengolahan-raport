@@ -1,7 +1,7 @@
 import { ClipboardCheck, Loader2, User, Edit3, Plus } from "lucide-react";
 import Form from "next/form";
 import React, { useActionState, useState, useEffect } from "react";
-import { DevelopmentLevel, Prisma } from "@prisma/client";
+import { DevelopmentLevel, Prisma, type Semester } from "@prisma/client";
 import {
   createBulkDevelopmentAssessments,
   updateBulkDevelopmentAssessments,
@@ -30,21 +30,22 @@ interface Props {
     };
   }>;
   indicators?: DevelopmentIndicatorWithAspect[];
-  initialSemester?: number;
+  initialSemester?: Semester;
   initialAcademicYear?: string;
+  classId: string;
 }
 
 export const DevelopmentAssessmentBulkForm = ({
   onClose,
   student,
   indicators = [],
-  initialSemester = 1,
+  initialSemester = "SEMESTER_1",
   initialAcademicYear = "2024/2025",
+  classId,
 }: Props) => {
-  const [semester, setSemester] = useState<number>(initialSemester);
+  const [semester, setSemester] = useState<Semester>(initialSemester);
   const [academicYear, setAcademicYear] = useState<string>(initialAcademicYear);
 
-  // Filter assessments based on selected semester and academic year
   const existingAssessments = student.developmentAssessments.filter(
     (assessment) =>
       assessment.semester === semester &&
@@ -218,8 +219,9 @@ export const DevelopmentAssessmentBulkForm = ({
           <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-800">
               <strong>Mode Edit:</strong> Anda sedang mengedit penilaian yang
-              sudah ada untuk Semester {semester} - Tahun Ajaran {academicYear}.
-              Perubahan akan memperbarui data penilaian sebelumnya.
+              sudah ada untuk Semester {semester === "SEMESTER_1" ? "1" : "2"} -
+              Tahun Ajaran {academicYear}. Perubahan akan memperbarui data
+              penilaian sebelumnya.
             </p>
           </div>
         )}
@@ -254,7 +256,9 @@ export const DevelopmentAssessmentBulkForm = ({
         </div>
       ) : (
         <Form action={handleSubmit} className="space-y-6">
+          <input type="hidden" name="classId" value={classId} />
           <input type="hidden" name="studentId" value={selectedStudent} />
+
           <ErrorMessage message={state.error} />
 
           {/* Informasi Siswa & Semester */}
@@ -313,12 +317,14 @@ export const DevelopmentAssessmentBulkForm = ({
                 <select
                   id="semester"
                   value={semester}
-                  onChange={(e) => setSemester(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150"
+                  onChange={(e) => setSemester(e.target.value as Semester)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150 
+                  bg-gray-100 cursor-not-allowed"
                   required
+                  disabled
                 >
-                  <option value={1}>Semester 1</option>
-                  <option value={2}>Semester 2</option>
+                  <option value={"SEMESTER_1"}>Semester 1</option>
+                  <option value={"SEMESTER_2"}>Semester 2</option>
                 </select>
               </div>
 
@@ -335,8 +341,10 @@ export const DevelopmentAssessmentBulkForm = ({
                   value={academicYear}
                   onChange={(e) => setAcademicYear(e.target.value)}
                   placeholder="2024/2025"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150
+                  bg-gray-100 cursor-not-allowed"
                   required
+                  disabled
                 />
               </div>
             </div>
