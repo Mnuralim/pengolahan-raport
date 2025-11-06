@@ -13,6 +13,7 @@ export const getStudent = unstable_cache(
         id,
       },
       include: {
+        academicYear: true,
         class: true,
         physicalDevelopments: true,
         teacherNotes: true,
@@ -75,7 +76,7 @@ export const getAllStudents = unstable_cache(
     }
 
     if (academicYear) {
-      assessmentWhere.academicYear = academicYear;
+      assessmentWhere.academicYearId = academicYear;
     }
 
     const [totalCount, students] = await Promise.all([
@@ -96,6 +97,7 @@ export const getAllStudents = unstable_cache(
           [sortBy || "createdAt"]: sortOrder === "desc" ? "desc" : "asc",
         },
         include: {
+          academicYear: true,
           class: true,
           physicalDevelopments: true,
           developmentAssessments: {
@@ -207,6 +209,15 @@ export async function createStudent(
       };
     }
 
+    const existingAcademicYear = await prisma.academicYear.findUnique({
+      where: { id: academicYear, isDeleted: false },
+    });
+    if (!existingAcademicYear) {
+      return {
+        error: "Tahun akademik tidak ditemukan.",
+      };
+    }
+
     let profileImageUrl: string | null = null;
     if (profileImage && profileImage.size > 0) {
       const imageArrayBuffer = await profileImage.arrayBuffer();
@@ -237,7 +248,7 @@ export async function createStudent(
           motherOccupation: motherOccupation || null,
           childOrder: childOrder ? parseInt(childOrder) : null,
           status: status || null,
-          academicYear,
+          academicYearId: academicYear,
           admittedAt: admittedAt ? new Date(admittedAt) : null,
           classId,
           imageUrl: profileImageUrl,
@@ -361,6 +372,16 @@ export async function updateStudent(
       };
     }
 
+    const existingAcademicYear = await prisma.academicYear.findUnique({
+      where: { id: academicYear, isDeleted: false },
+    });
+
+    if (!existingAcademicYear) {
+      return {
+        error: "Tahun akademik tidak ditemukan.",
+      };
+    }
+
     let profileImageUrl = existingStudent.imageUrl;
     if (profileImage && profileImage.size > 0) {
       const imageArrayBuffer = await profileImage.arrayBuffer();
@@ -391,7 +412,7 @@ export async function updateStudent(
         motherOccupation: motherOccupation || null,
         childOrder: childOrder ? parseInt(childOrder) : null,
         status: status || null,
-        academicYear,
+        academicYearId: academicYear,
         admittedAt: admittedAt ? new Date(admittedAt) : null,
         classId,
         imageUrl: profileImageUrl,

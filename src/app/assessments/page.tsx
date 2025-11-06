@@ -1,3 +1,4 @@
+import { getAllAcademicYears } from "@/actions/academic-year";
 import { ClassList } from "./_components/list";
 import { getAllClasses } from "@/actions/class";
 
@@ -16,13 +17,14 @@ interface Props {
 export default async function ClassPage({ searchParams }: Props) {
   const { success, message, error, limit, skip, sortBy, sortOrder } =
     await searchParams;
-  const [classResult] = await Promise.all([
+  const [classResult, academicYearResult] = await Promise.all([
     getAllClasses(
       skip || "0",
       limit || "10",
       sortBy || "name",
       sortOrder || "desc"
     ),
+    getAllAcademicYears("0", "100", "createdAt", "desc"),
   ]);
 
   return (
@@ -42,6 +44,7 @@ export default async function ClassPage({ searchParams }: Props) {
 
       <div className="p-6">
         <ClassList
+          academicYears={academicYearResult.academicYears}
           classes={classResult.classes}
           pagination={{
             currentPage: classResult.currentPage,

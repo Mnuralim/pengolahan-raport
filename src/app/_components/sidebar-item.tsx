@@ -14,6 +14,7 @@ import {
   School,
   Printer,
   PencilIcon,
+  TagIcon,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -101,6 +102,12 @@ export function SidebarItem({
       icon: <Home className="w-5 h-5" />,
       href: "/",
       roles: ["KEPALA_SEKOLAH", "GURU"] as Role[],
+    },
+    {
+      name: "Tahun Akademik",
+      icon: <TagIcon className="w-5 h-5" />,
+      href: "/academic-years",
+      roles: ["GURU", "KEPALA_SEKOLAH"] as Role[],
     },
     {
       name: "Aspek Perkembangan",

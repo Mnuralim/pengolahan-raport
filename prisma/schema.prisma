@@ -44,29 +44,30 @@ enum TeacherStatus {
 }
 
 model Student {
-  id               String    @id @unique @default(uuid())
-  nis              String    @unique
+  id               String        @id @unique @default(uuid())
+  nis              String        @unique
   name             String
-  gender           Gender    @default(MALE)
-  birthPlace       String?   @map("birth_place")
-  birthDate        DateTime? @map("birth_date")
-  religion         Religion  @map("religion")
+  gender           Gender        @default(MALE)
+  birthPlace       String?       @map("birth_place")
+  birthDate        DateTime?     @map("birth_date")
+  religion         Religion      @map("religion")
   address          String?
-  fatherName       String?   @map("father_name")
-  motherName       String?   @map("mother_name")
-  fatherOccupation String?   @map("father_occupation")
-  motherOccupation String?   @map("mother_occupation")
-  childOrder       Int?      @map("child_order")
+  fatherName       String?       @map("father_name")
+  motherName       String?       @map("mother_name")
+  fatherOccupation String?       @map("father_occupation")
+  motherOccupation String?       @map("mother_occupation")
+  childOrder       Int?          @map("child_order")
   imageUrl         String?
-  status           String?   @map("status")
-  academicYear     String    @map("academic_year")
-  admittedAt       DateTime? @map("admitted_at")
-  class            Class     @relation(fields: [classId], references: [id])
+  status           String?       @map("status")
+  academicYearId   String?       @map("academic_year_id")
+  academicYear     AcademicYear? @relation(fields: [academicYearId], references: [id])
+  admittedAt       DateTime?     @map("admitted_at")
+  class            Class         @relation(fields: [classId], references: [id])
   classId          String
-  isDeleted        Boolean   @default(false) @map("is_deleted")
-  deletedAt        DateTime? @map("deleted_at")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at")
+  isDeleted        Boolean       @default(false) @map("is_deleted")
+  deletedAt        DateTime?     @map("deleted_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @default(now()) @updatedAt @map("updated_at")
 
   developmentAssessments DevelopmentAssessment[]
   physicalDevelopments   PhysicalDevelopment?
@@ -151,18 +152,19 @@ model DevelopmentAssessment {
   notes          String?              @db.Text
   assessmentDate DateTime?            @map("assessment_date")
   semester       Semester             @default(SEMESTER_1)
-  academicYear   String               @map("academic_year")
+  academicYearId String               @map("academic_year")
+  academicYear   AcademicYear         @relation(fields: [academicYearId], references: [id], map: "dev_assessment_academic_year_fk")
   isDeleted      Boolean              @default(false) @map("is_deleted")
   deletedAt      DateTime?            @map("deleted_at")
   createdAt      DateTime             @default(now()) @map("created_at")
   updatedAt      DateTime             @default(now()) @updatedAt @map("updated_at")
 
-  @@unique([studentId, indicatorId, semester, academicYear], map: "unique_student_indicator_semester_year")
+  @@unique([studentId, indicatorId, semester, academicYearId], map: "unique_student_indicator_semester_year")
   @@index([studentId], map: "idx_dev_assessment_student")
   @@index([indicatorId], map: "idx_dev_assessment_indicator")
   @@index([semester], map: "idx_dev_assessment_semester")
-  @@index([academicYear], map: "idx_dev_assessment_academic_year")
-  @@index([studentId, academicYear, semester], map: "idx_student_period")
+  @@index([academicYearId], map: "idx_dev_assessment_academic_year")
+  @@index([studentId, academicYearId, semester], map: "idx_student_period")
   @@map("development_assessments")
 }
 
@@ -222,4 +224,17 @@ enum PAUDNoteType {
   EMOTIONAL
   RECOMMENDATION
   HEALTH
+}
+
+model AcademicYear {
+  id                    String                  @id @unique @default(uuid())
+  year                  String                  @unique
+  isDeleted             Boolean                 @default(false) @map("is_deleted")
+  deletedAt             DateTime?               @map("deleted_at")
+  createdAt             DateTime                @default(now()) @map("created_at")
+  updatedAt             DateTime                @default(now()) @updatedAt @map("updated_at")
+  Student               Student[]
+  DevelopmentAssessment DevelopmentAssessment[]
+
+  @@map("academic_years")
 }

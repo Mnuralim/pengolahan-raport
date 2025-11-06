@@ -2,7 +2,7 @@ import { Loader2, GraduationCap, Heart, Ruler, Upload, X } from "lucide-react";
 import Form from "next/form";
 import React, { useActionState, useState } from "react";
 import { ErrorMessage } from "../../_components/error-message";
-import type { Class } from "@prisma/client";
+import type { AcademicYear, Class } from "@prisma/client";
 import { createStudent, updateStudent } from "@/actions/student";
 import type { StudentWithClass } from "./list";
 import Image from "next/image";
@@ -12,6 +12,7 @@ interface Props {
   selectedStudent?: StudentWithClass | null;
   onClose: () => void;
   classes: Class[];
+  academicYears: AcademicYear[];
 }
 
 export const StudentForm = ({
@@ -19,6 +20,7 @@ export const StudentForm = ({
   selectedStudent,
   onClose,
   classes,
+  academicYears,
 }: Props) => {
   const [state, action, pending] = useActionState(
     selectedStudent ? updateStudent : createStudent,
@@ -286,17 +288,22 @@ export const StudentForm = ({
                 htmlFor="academicYear"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Tahun Akademik *
+                Tahun Akademik Masuk *
               </label>
-              <input
-                type="text"
+              <select
                 id="academicYear"
                 name="academicYear"
-                defaultValue={selectedStudent?.academicYear || ""}
-                placeholder="2024/2025"
+                defaultValue={selectedStudent?.academicYearId || ""}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-150"
                 required
-              />
+              >
+                <option value="">Pilih Tahun Akademik</option>
+                {academicYears.map((year) => (
+                  <option key={year.id} value={year.id}>
+                    {year.year}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

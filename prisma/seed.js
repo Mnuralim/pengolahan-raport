@@ -3,7 +3,7 @@ import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-async function createAdmin() {
+async function createTeacher() {
   console.log("Seeding Kepala Sekolah...");
 
   const defaultTeacher = {
@@ -36,7 +36,7 @@ async function createAdmin() {
 }
 
 async function main() {
-  await createAdmin();
+  await createTeacher();
 }
 
 main()

@@ -1,6 +1,5 @@
 import { getAllAcademicYears } from "@/actions/academic-year";
-import { ClassList } from "./_components/list";
-import { getAllClasses } from "@/actions/class";
+import { AcademicYearList } from "./_components/list";
 
 interface Props {
   searchParams: Promise<{
@@ -14,18 +13,16 @@ interface Props {
   }>;
 }
 
-export default async function PrintsPage({ searchParams }: Props) {
+export default async function AcademicYearPage({ searchParams }: Props) {
   const { success, message, error, limit, skip, sortBy, sortOrder } =
     await searchParams;
-  const [classResult, academicYearResult] = await Promise.all([
-    getAllClasses(
-      skip || "0",
-      limit || "10",
-      sortBy || "name",
-      sortOrder || "desc"
-    ),
-    getAllAcademicYears("0", "100", "createdAt", "desc"),
-  ]);
+
+  const academicYearResult = await getAllAcademicYears(
+    skip || "0",
+    limit || "100",
+    sortBy || "year",
+    sortOrder || "desc"
+  );
 
   return (
     <div className="bg-white border border-slate-200 shadow-sm rounded-lg">
@@ -33,24 +30,23 @@ export default async function PrintsPage({ searchParams }: Props) {
         <div className="flex items-center gap-3">
           <div>
             <h1 className="text-xl font-semibold text-slate-900">
-              Prints Report Management
+              Academic Year Management
             </h1>
             <p className="text-sm text-slate-600 mt-1">
-              Kelola cetak rapot disini
+              Kelola data tahun ajaran disini
             </p>
           </div>
         </div>
       </div>
 
       <div className="p-6">
-        <ClassList
+        <AcademicYearList
           academicYears={academicYearResult.academicYears}
-          classes={classResult.classes}
           pagination={{
-            currentPage: classResult.currentPage,
-            itemsPerPage: classResult.itemsPerPage,
-            totalItems: classResult.totalCount,
-            totalPages: classResult.totalPages,
+            currentPage: academicYearResult.currentPage,
+            itemsPerPage: academicYearResult.itemsPerPage,
+            totalItems: academicYearResult.totalCount,
+            totalPages: academicYearResult.totalPages,
             preserveParams: {
               limit,
               skip,

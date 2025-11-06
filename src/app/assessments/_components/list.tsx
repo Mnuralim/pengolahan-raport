@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Tabel, type TabelColumn } from "../../_components/tabel";
 import { Pagination } from "../../_components/pagination";
 import { Alert } from "../../_components/alert";
-import type { Prisma } from "@prisma/client";
+import type { AcademicYear, Prisma } from "@prisma/client";
 
 export type ClassWithRelations = Prisma.ClassGetPayload<{
   include: {
@@ -24,20 +24,8 @@ interface Props {
   message?: string;
   classes: ClassWithRelations[];
   pagination: PaginationProps;
+  academicYears: AcademicYear[];
 }
-
-const generateAcademicYears = () => {
-  const currentYear = new Date().getFullYear();
-  const years: string[] = [];
-
-  for (let i = 0; i < 3; i++) {
-    const startYear = currentYear - i;
-    const endYear = startYear + 1;
-    years.push(`${startYear}/${endYear}`);
-  }
-
-  return years;
-};
 
 const semesters = ["SEMESTER_1", "SEMESTER_2"];
 
@@ -45,6 +33,7 @@ type ExpandedClassData = {
   id: string;
   class: ClassWithRelations;
   academicYear: string;
+  academicYearId: string;
   semester: string;
 };
 
@@ -53,25 +42,25 @@ export const ClassList = ({
   classes,
   message,
   pagination,
+  academicYears,
 }: Props) => {
   const [filterClass, setFilterClass] = useState<string>("all");
   const [filterAcademicYear, setFilterAcademicYear] = useState<string>("all");
   const [filterSemester, setFilterSemester] = useState<string>("all");
   const router = useRouter();
 
-  const academicYears = useMemo(() => generateAcademicYears(), []);
-
   const expandedData = useMemo(() => {
     const result: ExpandedClassData[] = [];
 
     classes.forEach((classItem) => {
-      academicYears.forEach((year) => {
+      academicYears.forEach((academicYear) => {
         semesters.forEach((semester) => {
           result.push({
-            id: `${classItem.id}-${year}-${semester}`,
+            id: `${classItem.id}-${academicYear.year}-${semester}`,
             class: classItem,
-            academicYear: year,
+            academicYear: academicYear.year,
             semester: semester,
+            academicYearId: academicYear.id,
           });
         });
       });
@@ -80,7 +69,6 @@ export const ClassList = ({
     return result;
   }, [classes, academicYears]);
 
-  // Filter data berdasarkan pilihan filter
   const filteredData = useMemo(() => {
     return expandedData.filter((item) => {
       const matchClass = filterClass === "all" || item.class.id === filterClass;
@@ -120,7 +108,8 @@ export const ClassList = ({
     },
     {
       header: "Semester",
-      accessor: (item) => (item.semester === "SEMESTER_1" ? "Ganjil" : "Genap"),
+      accessor: (item) =>
+        item.semester === "SEMESTER_1" ? "Semester 1" : "Semester 2",
     },
     {
       header: "Aksi",
@@ -129,7 +118,7 @@ export const ClassList = ({
           <button
             onClick={() =>
               router.push(
-                `/assessments/${item.class.id}?year=${item.academicYear}&semester=${item.semester}`
+                `/assessments/${item.class.id}?year=${item.academicYearId}&semester=${item.semester}`
               )
             }
             className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors duration-150 border border-blue-200"
@@ -187,8 +176,8 @@ export const ClassList = ({
               >
                 <option value="all">Semua Tahun</option>
                 {academicYears.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
+                  <option key={year.id} value={year.year}>
+                    {year.year}
                   </option>
                 ))}
               </select>
@@ -211,7 +200,7 @@ export const ClassList = ({
                 <option value="all">Semua Semester</option>
                 {semesters.map((semester) => (
                   <option key={semester} value={semester}>
-                    {semester}
+                    {semester === "SEMESTER_1" ? "Semester 1" : "Semester 2"}
                   </option>
                 ))}
               </select>

@@ -1,6 +1,7 @@
 import { getAllStudents } from "@/actions/student";
 import { ReportList } from "./_components/list";
 import type { Semester } from "@prisma/client";
+import { getAcademicYear } from "@/actions/academic-year";
 
 interface Props {
   searchParams: Promise<{
@@ -36,7 +37,7 @@ export default async function PrintsPage({ searchParams, params }: Props) {
 
   const { classId } = await params;
 
-  const [studentResult] = await Promise.all([
+  const [studentResult, academicYear] = await Promise.all([
     getAllStudents(
       skip || "0",
       limit || "10",
@@ -46,7 +47,18 @@ export default async function PrintsPage({ searchParams, params }: Props) {
       classId,
       semester || "SEMESTER_1"
     ),
+    getAcademicYear(year || ""),
   ]);
+
+  if (!academicYear) {
+    return (
+      <div className="bg-white border border-slate-200 shadow-sm rounded-lg p-6">
+        <p className="text-sm text-slate-600 mt-1">
+          Tahun akademik tidak ditemukan
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border border-slate-200 shadow-sm rounded-lg">
@@ -65,8 +77,11 @@ export default async function PrintsPage({ searchParams, params }: Props) {
 
       <div className="p-6">
         <ReportList
+          year={{
+            id: academicYear?.id,
+            year: academicYear?.year,
+          }}
           semester={semester as Semester}
-          year={year || "2025/2026"}
           reports={studentResult.students}
           pagination={{
             currentPage: studentResult.currentPage,

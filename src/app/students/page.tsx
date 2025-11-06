@@ -1,6 +1,7 @@
 import { getAllStudents } from "@/actions/student";
 import { StudentList } from "./_components/list";
 import { getAllClasses } from "@/actions/class";
+import { getAllAcademicYears } from "@/actions/academic-year";
 
 interface Props {
   searchParams: Promise<{
@@ -28,7 +29,7 @@ export default async function StudentPage({ searchParams }: Props) {
     search,
     classId,
   } = await searchParams;
-  const [studentResult, classResult] = await Promise.all([
+  const [studentResult, classResult, academicYearResult] = await Promise.all([
     getAllStudents(
       skip || "0",
       limit || "10",
@@ -38,6 +39,7 @@ export default async function StudentPage({ searchParams }: Props) {
       classId
     ),
     getAllClasses("0", "100", "createdAt", "desc"),
+    getAllAcademicYears("0", "100", "createdAt", "desc"),
   ]);
 
   return (
@@ -57,6 +59,7 @@ export default async function StudentPage({ searchParams }: Props) {
 
       <div className="p-6">
         <StudentList
+          academicYears={academicYearResult.academicYears}
           classes={classResult.classes}
           students={studentResult.students}
           pagination={{

@@ -9,12 +9,12 @@ import { deleteStudent } from "@/actions/student";
 import { Pagination } from "../../_components/pagination";
 import { Modal } from "../../_components/modal";
 import { Alert } from "../../_components/alert";
-import type { Class, Prisma } from "@prisma/client";
+import type { AcademicYear, Class, Prisma } from "@prisma/client";
 import { FilterControlStudents } from "./filter-controll";
 import Image from "next/image";
 
 export type StudentWithClass = Prisma.StudentGetPayload<{
-  include: { physicalDevelopments: true; class: true };
+  include: { physicalDevelopments: true; class: true; academicYear: true };
 }>;
 
 interface Props {
@@ -23,6 +23,7 @@ interface Props {
   students: StudentWithClass[];
   pagination: PaginationProps;
   classes: Class[];
+  academicYears: AcademicYear[];
 }
 
 export const StudentList = ({
@@ -31,6 +32,7 @@ export const StudentList = ({
   message,
   pagination,
   classes,
+  academicYears,
 }: Props) => {
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const [selectedStudent, setSelectedStudent] =
@@ -165,7 +167,7 @@ export const StudentList = ({
     },
     {
       header: "Tahun Akademik",
-      accessor: (item) => item.academicYear || "-",
+      accessor: (item) => item.academicYear?.year || "-",
     },
     {
       header: "Orang Tua",
@@ -271,6 +273,7 @@ export const StudentList = ({
 
       <Modal isOpen={isOpenModal} onClose={handleCloseModal}>
         <StudentForm
+          academicYears={academicYears}
           modal={selectedStudent ? "edit" : "add"}
           onClose={handleCloseModal}
           selectedStudent={selectedStudent}

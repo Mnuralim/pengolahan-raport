@@ -2,6 +2,7 @@ import { getAllStudents } from "@/actions/student";
 import { AssessmentList } from "./_components/list";
 import { getAllDevelopmentIndicators } from "@/actions/development-aspect";
 import type { Semester } from "@prisma/client";
+import { getAcademicYear } from "@/actions/academic-year";
 
 interface Props {
   searchParams: Promise<{
@@ -35,7 +36,7 @@ export default async function AssessmentPage({ searchParams, params }: Props) {
     year,
   } = await searchParams;
   const { classId } = await params;
-  const [studentResult, indicatorsResult] = await Promise.all([
+  const [studentResult, indicatorsResult, academicYear] = await Promise.all([
     getAllStudents(
       skip || "0",
       limit || "10",
@@ -45,7 +46,22 @@ export default async function AssessmentPage({ searchParams, params }: Props) {
       classId
     ),
     getAllDevelopmentIndicators(),
+    getAcademicYear(year || ""),
   ]);
+
+  if (year && !academicYear) {
+    return (
+      <div className="bg-white border border-slate-200 shadow-sm rounded-lg p-6">
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">
+          Academic Year Not Found
+        </h2>
+        <p className="text-sm text-slate-600">
+          Tahun akademik dengan tahun &quot;{year}&quot; tidak ditemukan.
+          Silakan periksa kembali.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border border-slate-200 shadow-sm rounded-lg">
@@ -65,7 +81,10 @@ export default async function AssessmentPage({ searchParams, params }: Props) {
       <div className="p-6">
         <AssessmentList
           semester={semester as Semester | undefined}
-          year={year}
+          year={{
+            id: academicYear?.id || "",
+            year: academicYear?.year || "",
+          }}
           indicators={indicatorsResult}
           reports={studentResult.students}
           pagination={{

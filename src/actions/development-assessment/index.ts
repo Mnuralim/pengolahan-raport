@@ -360,10 +360,10 @@ export async function updateDevelopmentAssessment(
       const duplicateAssessment = await prisma.developmentAssessment.findUnique(
         {
           where: {
-            studentId_indicatorId_semester_academicYear: {
+            studentId_indicatorId_semester_academicYearId: {
               studentId,
               indicatorId,
-              academicYear: existingAssessment.academicYear,
+              academicYearId: existingAssessment.academicYearId,
               semester: existingAssessment.semester,
             },
             isDeleted: false,
@@ -519,7 +519,7 @@ export async function createBulkDevelopmentAssessments(
           studentId,
           indicatorId: item.indicatorId,
           semester,
-          academicYear,
+          academicYearId: academicYear,
           isDeleted: false,
         },
       });
@@ -534,7 +534,7 @@ export async function createBulkDevelopmentAssessments(
             ? new Date(item.assessmentDate)
             : null,
           semester,
-          academicYear,
+          academicYearId: academicYear,
         });
       }
     }
@@ -563,7 +563,9 @@ export async function createBulkDevelopmentAssessments(
     };
   }
 
-  const successMessage = `Penilaian perkembangan semester ${semester} berhasil ditambahkan.`;
+  const successMessage = `Penilaian perkembangan semester ${
+    semester === "SEMESTER_1" ? "1" : "2"
+  } berhasil ditambahkan.`;
 
   redirect(
     `/assessments/${classId}?semester=${semester}&year=${academicYear}&success=1&message=${encodeURIComponent(
@@ -581,8 +583,6 @@ export async function updateBulkDevelopmentAssessments(
   const studentId = formData.get("studentId") as string;
   const semester = formData.get("semester") as Semester;
   const academicYear = formData.get("academicYear") as string;
-
-  console.log("semester", semester);
 
   try {
     const assessmentData = formData.get("assessmentData") as string;
@@ -624,6 +624,19 @@ export async function updateBulkDevelopmentAssessments(
       };
     }
 
+    const existingYear = await prisma.academicYear.findFirst({
+      where: {
+        id: academicYear,
+        isDeleted: false,
+      },
+    });
+
+    if (!existingYear) {
+      return {
+        error: "Tahun ajaran tidak ditemukan.",
+      };
+    }
+
     let parsedData;
     try {
       parsedData = JSON.parse(assessmentData);
@@ -655,7 +668,7 @@ export async function updateBulkDevelopmentAssessments(
                   ? new Date(item.assessmentDate)
                   : null,
                 semester,
-                academicYear,
+                academicYearId: existingYear.id,
                 updatedAt: new Date(),
               },
             })
@@ -667,7 +680,7 @@ export async function updateBulkDevelopmentAssessments(
                 studentId,
                 indicatorId: item.indicatorId,
                 semester,
-                academicYear,
+                academicYearId: existingYear.id,
                 isDeleted: false,
               },
             });
@@ -684,7 +697,7 @@ export async function updateBulkDevelopmentAssessments(
                     ? new Date(item.assessmentDate)
                     : null,
                   semester,
-                  academicYear,
+                  academicYearId: existingYear.id,
                 },
               })
             );
@@ -706,7 +719,7 @@ export async function updateBulkDevelopmentAssessments(
             studentId,
             indicatorId: item.indicatorId,
             semester,
-            academicYear,
+            academicYearId: existingYear.id,
             isDeleted: false,
           },
         });
@@ -721,7 +734,7 @@ export async function updateBulkDevelopmentAssessments(
               ? new Date(item.assessmentDate)
               : null,
             semester,
-            academicYear,
+            academicYearId: existingYear.id,
           });
         }
       }
@@ -747,8 +760,12 @@ export async function updateBulkDevelopmentAssessments(
   }
 
   const successMessage = isEditMode
-    ? `Penilaian perkembangan semester ${semester} berhasil diperbarui.`
-    : `Penilaian perkembangan semester ${semester} berhasil ditambahkan.`;
+    ? `Penilaian perkembangan semester ${
+        semester === "SEMESTER_1" ? "1" : "2"
+      } berhasil diperbarui.`
+    : `Penilaian perkembangan semester ${
+        semester === "SEMESTER_1" ? "1" : "2"
+      } berhasil ditambahkan.`;
 
   redirect(
     `/assessments/${classId}?semester=${semester}&year=${academicYear}&success=1&message=${encodeURIComponent(

@@ -41,6 +41,7 @@ export type DevelopmentIndicatorWithAspect =
 
 export type StudentWithAssessments = Prisma.StudentGetPayload<{
   include: {
+    academicYear: true;
     class: true;
     physicalDevelopments: true;
     developmentAssessments: {
@@ -181,7 +182,7 @@ export const StudentDetail = ({ student, indicators }: Props) => {
         <div className="bg-white rounded-lg border border-gray-200 mb-6">
           <div className="p-6">
             <div className="flex items-start gap-6">
-              <div className="w-20 h-20 bg-red-500 rounded-lg border border-gray-200 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-lg border border-gray-200 flex items-center justify-center">
                 {student.imageUrl !== null ? (
                   <Image
                     src={student?.imageUrl}
@@ -218,7 +219,9 @@ export const StudentDetail = ({ student, indicators }: Props) => {
                   )}
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4" />
-                    <span className="font-medium">{student.academicYear}</span>
+                    <span className="font-medium">
+                      {student.academicYear?.year}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -508,7 +511,7 @@ export const StudentDetail = ({ student, indicators }: Props) => {
                             Tahun Akademik
                           </p>
                           <p className="text-sm text-gray-900">
-                            {student.academicYear}
+                            {student.academicYear?.year}
                           </p>
                         </div>
                       </div>

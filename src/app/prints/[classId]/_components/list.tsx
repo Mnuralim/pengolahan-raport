@@ -27,7 +27,10 @@ interface Props {
   reports: StudentWithAssessments[];
   pagination: PaginationProps;
   semester: Semester;
-  year: string;
+  year: {
+    id: string;
+    year: string;
+  };
 }
 
 export const ReportList = ({
@@ -104,8 +107,9 @@ export const ReportList = ({
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold text-gray-900">Laporan Raport</h1>
           <span className="text-sm text-gray-500">
-            Semester {currentSemester === "SEMESTER_1" ? "Ganjil" : "Genap"} -{" "}
-            {currentAcademicYear}
+            Semester{" "}
+            {currentSemester === "SEMESTER_1" ? "Semester 1" : "Semester 2"} -{" "}
+            {year.year}
           </span>
         </div>
       </div>
@@ -153,7 +157,7 @@ export const ReportList = ({
                     <PAUDReportPDF
                       student={previewStudent}
                       semester={currentSemester}
-                      academicYear={currentAcademicYear}
+                      academicYear={currentAcademicYear.year}
                       schoolInfo={schoolInfo}
                     />
                   }
@@ -186,7 +190,7 @@ export const ReportList = ({
                 <PAUDReportPDF
                   student={previewStudent}
                   semester={currentSemester}
-                  academicYear={currentAcademicYear}
+                  academicYear={currentAcademicYear.year}
                   schoolInfo={schoolInfo}
                 />
               </PDFViewer>

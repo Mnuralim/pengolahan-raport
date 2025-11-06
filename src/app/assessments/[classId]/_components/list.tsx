@@ -20,7 +20,10 @@ interface Props {
   reports: StudentWithAssessments[];
   pagination: PaginationProps;
   indicators: DevelopmentIndicatorWithAspect[];
-  year?: string;
+  year: {
+    id: string;
+    year: string;
+  };
   semester?: Semester;
   classId: string;
 }
@@ -52,7 +55,7 @@ export const AssessmentList = ({
 
   const handleCloseAlert = () => {
     router.replace(
-      `/assessments/${classId}?year=${year}&semester=${semester}`,
+      `/assessments/${classId}?year=${year.id}&semester=${semester}`,
       { scroll: false }
     );
   };
@@ -95,8 +98,8 @@ export const AssessmentList = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold text-gray-900">
-            Input Penilaian Siswa {year} -{" "}
-            {semester === "SEMESTER_1" ? "Ganjil" : "Genap"}
+            Input Penilaian Siswa {year?.year} -{" "}
+            {semester === "SEMESTER_1" ? "Semester 1" : "Semester 2"}
           </h1>
         </div>
       </div>
