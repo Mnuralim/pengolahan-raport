@@ -131,6 +131,19 @@ export async function createTeacher(
       };
     }
 
+    const existingGuru = await prisma.teacher.findFirst({
+      where: {
+        role: "GURU",
+        isDeleted: false,
+      },
+    });
+
+    if (existingGuru) {
+      return {
+        error: "Guru sudah ada. Tidak bisa menambahkan guru baru.",
+      };
+    }
+
     const existingUsername = await prisma.teacher.findUnique({
       where: { username, isDeleted: false },
     });
