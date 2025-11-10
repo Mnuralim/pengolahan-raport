@@ -108,8 +108,7 @@ export const ClassList = ({
     },
     {
       header: "Semester",
-      accessor: (item) =>
-        item.semester === "SEMESTER_1" ? "Semester 1" : "Semester 2",
+      accessor: (item) => (item.semester === "SEMESTER_1" ? "Ganjil" : "Genap"),
     },
     {
       header: "Aksi",
