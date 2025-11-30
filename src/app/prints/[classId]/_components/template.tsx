@@ -420,7 +420,7 @@ export const PAUDReportPDF: React.FC<PAUDReportPDFProps> = ({
             <View style={styles.identityValue}>
               <View style={styles.identityRow}>
                 <Text style={{ width: "30%" }}>a. Kelompok</Text>
-                <Text>: {student.class.ageGroup}</Text>
+                <Text>: {student.class.name}</Text>
               </View>
               <View style={styles.identityRow}>
                 <Text style={{ width: "30%" }}>b. Pada Tanggal</Text>

@@ -31,6 +31,7 @@ model Teacher {
 enum Role {
   GURU
   KEPALA_SEKOLAH
+  ADMIN
 }
 
 enum Gender {

@@ -42,7 +42,7 @@ export async function login(
       };
     }
 
-    await createSession(existingTeacher.id, username);
+    await createSession(existingTeacher.id, username, existingTeacher.role);
   } catch (error) {
     console.log(error);
     return {

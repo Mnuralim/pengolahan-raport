@@ -65,23 +65,23 @@ export const DevelopmentAspectList = ({
     router.replace("/development-aspects", { scroll: false });
   };
 
-  const formatAgeGroup = (ageGroup: string) => {
-    const ageGroupMap: Record<string, string> = {
-      GROUP_A: "Kelompok A (4-5 tahun)",
-      GROUP_B: "Kelompok B (5-6 tahun)",
-      TODDLER: "Kelompok Bermain (2-4 tahun)",
-    };
-    return ageGroupMap[ageGroup] || ageGroup;
-  };
+  // const formatAgeGroup = (ageGroup: string) => {
+  //   const ageGroupMap: Record<string, string> = {
+  //     GROUP_A: "Kelompok A (4-5 tahun)",
+  //     GROUP_B: "Kelompok B (5-6 tahun)",
+  //     TODDLER: "Kelompok Bermain (2-4 tahun)",
+  //   };
+  //   return ageGroupMap[ageGroup] || ageGroup;
+  // };
 
-  const getAgeGroupColor = (ageGroup: string) => {
-    const colorMap: Record<string, string> = {
-      GROUP_A: "bg-blue-100 text-blue-800",
-      GROUP_B: "bg-green-100 text-green-800",
-      TODDLER: "bg-pink-100 text-pink-800",
-    };
-    return colorMap[ageGroup] || "bg-gray-100 text-gray-800";
-  };
+  // const getAgeGroupColor = (ageGroup: string) => {
+  //   const colorMap: Record<string, string> = {
+  //     GROUP_A: "bg-blue-100 text-blue-800",
+  //     GROUP_B: "bg-green-100 text-green-800",
+  //     TODDLER: "bg-pink-100 text-pink-800",
+  //   };
+  //   return colorMap[ageGroup] || "bg-gray-100 text-gray-800";
+  // };
 
   const tabel: TabelColumn<DevelopmentAspectWithRelations>[] = [
     {
@@ -131,51 +131,51 @@ export const DevelopmentAspectList = ({
         </div>
       ),
     },
-    {
-      header: "Kelompok Usia",
-      accessor: (item) => {
-        const ageGroups = [
-          ...new Set(
-            item.indicators
-              .filter((ind) => ind.ageGroup)
-              .map((ind) => ind.ageGroup as string)
-          ),
-        ];
-        return ageGroups.length > 0 ? ageGroups.join(", ") : "Semua";
-      },
-      render: (item) => {
-        const ageGroups = [
-          ...new Set(
-            item.indicators
-              .filter((ind) => ind.ageGroup)
-              .map((ind) => ind.ageGroup as string)
-          ),
-        ];
+    // {
+    //   header: "Kelompok Usia",
+    //   accessor: (item) => {
+    //     const ageGroups = [
+    //       ...new Set(
+    //         item.indicators
+    //           .filter((ind) => ind.ageGroup)
+    //           .map((ind) => ind.ageGroup as string)
+    //       ),
+    //     ];
+    //     return ageGroups.length > 0 ? ageGroups.join(", ") : "Semua";
+    //   },
+    //   render: (item) => {
+    //     const ageGroups = [
+    //       ...new Set(
+    //         item.indicators
+    //           .filter((ind) => ind.ageGroup)
+    //           .map((ind) => ind.ageGroup as string)
+    //       ),
+    //     ];
 
-        if (ageGroups.length === 0) {
-          return (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-              Semua Usia
-            </span>
-          );
-        }
+    //     if (ageGroups.length === 0) {
+    //       return (
+    //         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+    //           Semua Usia
+    //         </span>
+    //       );
+    //     }
 
-        return (
-          <div className="flex flex-wrap gap-1">
-            {ageGroups.map((ageGroup) => (
-              <span
-                key={ageGroup}
-                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getAgeGroupColor(
-                  ageGroup
-                )}`}
-              >
-                {formatAgeGroup(ageGroup)}
-              </span>
-            ))}
-          </div>
-        );
-      },
-    },
+    //     return (
+    //       <div className="flex flex-wrap gap-1">
+    //         {ageGroups.map((ageGroup) => (
+    //           <span
+    //             key={ageGroup}
+    //             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getAgeGroupColor(
+    //               ageGroup
+    //             )}`}
+    //           >
+    //             {formatAgeGroup(ageGroup)}
+    //           </span>
+    //         ))}
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       header: "Urutan",
       accessor: (item) => item.order.toString(),

@@ -6,12 +6,20 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import type { Gender, Prisma, TeacherStatus } from "@prisma/client";
 import { imagekit } from "@/lib/imagekit";
+import { getSession } from "../session";
 
 export const getTeacher = unstable_cache(
   async function getTeacher(id: string) {
     return prisma.teacher.findUnique({
       where: {
         id,
+      },
+      include: {
+        classes: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
   },
@@ -51,12 +59,18 @@ export const getAllTeachers = unstable_cache(
         where: {
           ...where,
           isDeleted: false,
+          role: {
+            not: "ADMIN",
+          },
         },
       }),
       prisma.teacher.findMany({
         where: {
           ...where,
           isDeleted: false,
+          role: {
+            not: "ADMIN",
+          },
         },
         skip: parseInt(skip),
         take: parseInt(limit),
@@ -95,6 +109,14 @@ export async function createTeacher(
     const password = formData.get("password") as string;
     const profileImage = formData.get("profileImage") as File;
 
+    const session = await getSession();
+
+    if (!session || session.role !== "ADMIN") {
+      return {
+        error: "Anda tidak memiliki izin untuk melakukan tindakan ini.",
+      };
+    }
+
     if (!name) {
       return {
         error: "Nama guru harus diisi.",
@@ -130,20 +152,6 @@ export async function createTeacher(
         error: "Password minimal 6 karakter.",
       };
     }
-
-    const existingGuru = await prisma.teacher.findFirst({
-      where: {
-        role: "GURU",
-        isDeleted: false,
-      },
-    });
-
-    if (existingGuru) {
-      return {
-        error: "Guru sudah ada. Tidak bisa menambahkan guru baru.",
-      };
-    }
-
     const existingUsername = await prisma.teacher.findUnique({
       where: { username, isDeleted: false },
     });
@@ -234,6 +242,14 @@ export async function updateTeacher(
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
     const profileImage = formData.get("profileImage") as File;
+
+    const session = await getSession();
+
+    if (!session || session.role !== "ADMIN") {
+      return {
+        error: "Anda tidak memiliki izin untuk melakukan tindakan ini.",
+      };
+    }
 
     if (!name) {
       return {
@@ -378,6 +394,14 @@ export async function updateTeacher(
 
 export async function deleteTeacher(id: string) {
   try {
+    const session = await getSession();
+
+    if (!session || session.role !== "ADMIN") {
+      redirect(
+        `/teachers?error=1&message=Anda tidak memiliki izin untuk melakukan tindakan ini.`
+      );
+      return;
+    }
     const existingTeacher = await prisma.teacher.findUnique({
       where: { id, isDeleted: false },
     });

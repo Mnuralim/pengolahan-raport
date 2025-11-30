@@ -8,7 +8,7 @@ import { deleteTeacher } from "@/actions/teacher";
 import { Pagination } from "../../_components/pagination";
 import { Modal } from "../../_components/modal";
 import { Alert } from "../../_components/alert";
-import type { Teacher } from "@prisma/client";
+import type { Role, Teacher } from "@prisma/client";
 import { TeacherForm } from "./form";
 import Image from "next/image";
 
@@ -17,6 +17,7 @@ interface Props {
   message?: string;
   teachers: Teacher[];
   pagination: PaginationProps;
+  role: Role;
 }
 
 export const TeacherList = ({
@@ -24,6 +25,7 @@ export const TeacherList = ({
   teachers,
   message,
   pagination,
+  role,
 }: Props) => {
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
@@ -135,15 +137,17 @@ export const TeacherList = ({
       accessor: (item) => (
         <div className="flex items-center gap-2">
           <button
+            disabled={role !== "ADMIN"}
             onClick={() => handleOpenModal(item)}
             className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed border border-blue-200"
-            title="Edit Data"
+            title={role === "ADMIN" ? "Edit Data" : "Tidak memiliki akses"}
           >
             <Edit className="w-4 h-4" />
           </button>
           <form action={() => deleteTeacher(item.id)}>
             <button
               type="submit"
+              disabled={role !== "ADMIN"}
               onClick={(e) => {
                 e.preventDefault();
                 if (
@@ -154,7 +158,7 @@ export const TeacherList = ({
                   e.currentTarget.form?.requestSubmit();
                 }
               }}
-              className="w-8 h-8 inline-flex items-center justify-center rounded-md bg-red-500 text-white hover:bg-red-600 text-sm transition-colors duration-150"
+              className="w-8 h-8 inline-flex items-center justify-center rounded-md bg-red-500 text-white hover:bg-red-600 text-sm transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Hapus Data"
             >
               <Trash2 className="w-4 h-4" />
@@ -168,13 +172,15 @@ export const TeacherList = ({
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-        <button
-          onClick={() => handleOpenModal()}
-          className="inline-flex items-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-800 transition-colors duration-150 shadow-sm border border-blue-600"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Tambah Guru
-        </button>
+        {role === "ADMIN" && (
+          <button
+            onClick={() => handleOpenModal()}
+            className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Tambah Guru
+          </button>
+        )}
       </div>
 
       <Tabel columns={tabel} data={teachers} />

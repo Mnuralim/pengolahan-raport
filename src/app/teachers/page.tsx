@@ -1,5 +1,6 @@
 import { getAllTeachers } from "@/actions/teacher";
 import { TeacherList } from "./_components/list";
+import { getSession } from "@/actions/session";
 
 interface Props {
   searchParams: Promise<{
@@ -16,6 +17,7 @@ interface Props {
 export default async function TeacherPage({ searchParams }: Props) {
   const { success, message, error, limit, skip, sortBy, sortOrder } =
     await searchParams;
+  const session = await getSession();
   const teacherResult = await getAllTeachers(
     skip || "0",
     limit || "10",
@@ -40,6 +42,7 @@ export default async function TeacherPage({ searchParams }: Props) {
 
       <div className="p-6">
         <TeacherList
+          role={session!.role}
           teachers={teacherResult.teachers}
           pagination={{
             currentPage: teacherResult.currentPage,

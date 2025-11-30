@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import type { Role } from "@prisma/client";
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 
@@ -12,6 +13,7 @@ export async function encryptJWT(payload: SessionPayload): Promise<string> {
       id: string;
       username: string;
       expiresAt: Date;
+      role: Role;
     }
   )
     .setProtectedHeader({
@@ -41,10 +43,11 @@ export async function decryptJWT(
 
 export async function createSession(
   id: string,
-  username: string
+  username: string,
+  role: Role
 ): Promise<void> {
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const session = await encryptJWT({ id, expiresAt, username });
+  const session = await encryptJWT({ id, expiresAt, username, role });
 
   (await cookies()).set("session", session, {
     httpOnly: true,

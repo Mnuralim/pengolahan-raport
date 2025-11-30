@@ -2,6 +2,8 @@ import { getAllStudents } from "@/actions/student";
 import { StudentList } from "./_components/list";
 import { getAllClasses } from "@/actions/class";
 import { getAllAcademicYears } from "@/actions/academic-year";
+import { getSession } from "@/actions/session";
+import { getTeacher } from "@/actions/teacher";
 
 interface Props {
   searchParams: Promise<{
@@ -29,6 +31,9 @@ export default async function StudentPage({ searchParams }: Props) {
     search,
     classId,
   } = await searchParams;
+  const session = await getSession();
+  const teacher = await getTeacher(session!.id);
+
   const [studentResult, classResult, academicYearResult] = await Promise.all([
     getAllStudents(
       skip || "0",
@@ -36,7 +41,7 @@ export default async function StudentPage({ searchParams }: Props) {
       sortBy || "createdAt",
       sortOrder || "desc",
       search,
-      classId
+      session!.role === "GURU" ? teacher?.classes[0].id : classId
     ),
     getAllClasses("0", "100", "createdAt", "desc"),
     getAllAcademicYears("0", "100", "createdAt", "desc"),
@@ -59,6 +64,7 @@ export default async function StudentPage({ searchParams }: Props) {
 
       <div className="p-6">
         <StudentList
+          teacherRole={session!.role}
           academicYears={academicYearResult.academicYears}
           classes={classResult.classes}
           students={studentResult.students}

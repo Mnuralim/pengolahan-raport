@@ -2,13 +2,14 @@ import React from "react";
 import { Search, SortAsc, SortDesc } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { Class } from "@prisma/client";
+import type { Class, Role } from "@prisma/client";
 
 interface Props {
   currentSortOrder?: string;
   currentSearch?: string;
   currentClassId?: string;
   classes?: Class[];
+  teacherRole: Role;
   path: string;
 }
 
@@ -18,6 +19,7 @@ export const FilterControlStudents = ({
   currentClassId,
   classes = [],
   path,
+  teacherRole,
 }: Props) => {
   const { replace } = useRouter();
   const searchParams = useSearchParams();
@@ -98,7 +100,7 @@ export const FilterControlStudents = ({
         </div>
 
         <div className="grid gap-2 grid-cols-1 sm:grid-cols-3">
-          {classes.length === 0 ? null : (
+          {classes.length === 0 || teacherRole === "GURU" ? null : (
             <select
               onChange={handleFilterClass}
               value={currentClassId || "all"}

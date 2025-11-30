@@ -104,6 +104,7 @@ export const AssessmentList = ({
         </div>
       </div>
       <FilterControlStudents
+        teacherRole="ADMIN"
         path="assessments"
         currentSearch={pagination.preserveParams!.search as string}
         currentSortOrder={pagination.preserveParams!.sortOrder as string}

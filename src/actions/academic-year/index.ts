@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
+import { getSession } from "../session";
 
 export const getAllAcademicYears = unstable_cache(
   async function getAllAcademicYears(
@@ -71,6 +72,13 @@ export async function createAcademicYear(
   formData: FormData
 ): Promise<FormState> {
   try {
+    const session = await getSession();
+
+    if (!session || session.role !== "ADMIN") {
+      return {
+        error: "Anda tidak memiliki izin untuk melakukan tindakan ini.",
+      };
+    }
     const year = formData.get("year") as string;
 
     if (!year) {
@@ -126,6 +134,13 @@ export async function updateAcademicYear(
   formData: FormData
 ): Promise<FormState> {
   try {
+    const session = await getSession();
+
+    if (!session || session.role !== "ADMIN") {
+      return {
+        error: "Anda tidak memiliki izin untuk melakukan tindakan ini.",
+      };
+    }
     const id = formData.get("id") as string;
     const year = formData.get("year") as string;
 
@@ -194,6 +209,13 @@ export async function updateAcademicYear(
 
 export async function deleteAcademicYear(id: string) {
   try {
+    const session = await getSession();
+
+    if (!session || session.role !== "ADMIN") {
+      redirect(
+        `/students?error=1&message=Anda tidak memiliki izin untuk melakukan tindakan ini.`
+      );
+    }
     const existingYear = await prisma.academicYear.findUnique({
       where: {
         id,

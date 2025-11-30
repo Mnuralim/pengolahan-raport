@@ -101,13 +101,13 @@ export function SidebarItem({
       name: "Dashboard",
       icon: <Home className="w-5 h-5" />,
       href: "/",
-      roles: ["KEPALA_SEKOLAH", "GURU"] as Role[],
+      roles: ["KEPALA_SEKOLAH", "GURU", "ADMIN"] as Role[],
     },
     {
       name: "Tahun Akademik",
       icon: <TagIcon className="w-5 h-5" />,
       href: "/academic-years",
-      roles: ["GURU", "KEPALA_SEKOLAH"] as Role[],
+      roles: ["ADMIN"] as Role[],
     },
     {
       name: "Aspek Perkembangan",
@@ -119,19 +119,19 @@ export function SidebarItem({
       name: "Daftar Guru",
       icon: <Users className="w-5 h-5" />,
       href: "/teachers",
-      roles: ["KEPALA_SEKOLAH"] as Role[],
+      roles: ["KEPALA_SEKOLAH", "ADMIN"] as Role[],
     },
     {
       name: "Daftar Kelas",
       icon: <School className="w-5 h-5" />,
       href: "/classes",
-      roles: ["GURU"] as Role[],
+      roles: ["ADMIN"] as Role[],
     },
     {
       name: "Daftar Siswa",
       icon: <GraduationCap className="w-5 h-5" />,
       href: "/students",
-      roles: ["GURU", "KEPALA_SEKOLAH"] as Role[],
+      roles: ["KEPALA_SEKOLAH", "ADMIN"] as Role[],
     },
     {
       name: "Penilaian Perkembangan",
@@ -140,10 +140,13 @@ export function SidebarItem({
       roles: ["GURU"] as Role[],
     },
     {
-      name: "Cetak Raport",
+      name:
+        role === "ADMIN" || role === "KEPALA_SEKOLAH"
+          ? "Laporan"
+          : "Cetak Raport",
       icon: <Printer className="w-5 h-5" />,
       href: "/prints",
-      roles: ["GURU", "KEPALA_SEKOLAH"] as Role[],
+      roles: ["GURU", "KEPALA_SEKOLAH", "ADMIN"] as Role[],
     },
   ];
 

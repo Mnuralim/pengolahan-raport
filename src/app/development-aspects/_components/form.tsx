@@ -528,12 +528,12 @@ export const DevelopmentAspectForm = ({
                     />
                   </div>
 
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-2 hidden">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Kelompok Usia
                     </label>
                     <select
-                      value={indicator.ageGroup || ""}
+                      value={""}
                       onChange={(e) =>
                         handleIndicatorChange(
                           index,

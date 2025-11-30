@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Tabel, type TabelColumn } from "../../_components/tabel";
 import { Pagination } from "../../_components/pagination";
 import { Alert } from "../../_components/alert";
-import type { AcademicYear, Prisma } from "@prisma/client";
+import type { AcademicYear, Prisma, Role } from "@prisma/client";
 
 export type ClassWithRelations = Prisma.ClassGetPayload<{
   include: {
@@ -25,6 +25,7 @@ interface Props {
   classes: ClassWithRelations[];
   pagination: PaginationProps;
   academicYears: AcademicYear[];
+  teacherRole: Role;
 }
 
 const semesters = ["SEMESTER_1", "SEMESTER_2"];
@@ -43,6 +44,7 @@ export const ClassList = ({
   message,
   pagination,
   academicYears,
+  teacherRole,
 }: Props) => {
   const [filterClass, setFilterClass] = useState<string>("all");
   const [filterAcademicYear, setFilterAcademicYear] = useState<string>("all");
@@ -137,27 +139,29 @@ export const ClassList = ({
           <h3 className="text-sm font-semibold text-gray-700">Filter Data</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label
-                htmlFor="filterClass"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Kelas
-              </label>
-              <select
-                id="filterClass"
-                value={filterClass}
-                onChange={(e) => setFilterClass(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              >
-                <option value="all">Semua Kelas</option>
-                {classes.map((classItem) => (
-                  <option key={classItem.id} value={classItem.id}>
-                    {classItem.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {teacherRole === "GURU" ? null : (
+              <div>
+                <label
+                  htmlFor="filterClass"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Kelas
+                </label>
+                <select
+                  id="filterClass"
+                  value={filterClass}
+                  onChange={(e) => setFilterClass(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                >
+                  <option value="all">Semua Kelas</option>
+                  {classes.map((classItem) => (
+                    <option key={classItem.id} value={classItem.id}>
+                      {classItem.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Filter Tahun Ajaran */}
             <div>

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `teachers` MODIFY `role` ENUM('GURU', 'KEPALA_SEKOLAH', 'ADMIN') NOT NULL DEFAULT 'GURU';

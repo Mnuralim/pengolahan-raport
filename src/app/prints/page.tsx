@@ -1,6 +1,8 @@
 import { getAllAcademicYears } from "@/actions/academic-year";
 import { ClassList } from "./_components/list";
 import { getAllClasses } from "@/actions/class";
+import { getSession } from "@/actions/session";
+import { getTeacher } from "@/actions/teacher";
 
 interface Props {
   searchParams: Promise<{
@@ -17,12 +19,17 @@ interface Props {
 export default async function PrintsPage({ searchParams }: Props) {
   const { success, message, error, limit, skip, sortBy, sortOrder } =
     await searchParams;
+  const session = await getSession();
+  const teacher = await getTeacher(session!.id);
+
   const [classResult, academicYearResult] = await Promise.all([
     getAllClasses(
       skip || "0",
       limit || "10",
       sortBy || "name",
-      sortOrder || "desc"
+      sortOrder || "desc",
+      undefined,
+      session!.role === "GURU" ? teacher?.classes[0].id : undefined
     ),
     getAllAcademicYears("0", "100", "createdAt", "desc"),
   ]);
@@ -44,6 +51,7 @@ export default async function PrintsPage({ searchParams }: Props) {
 
       <div className="p-6">
         <ClassList
+          teacherRole={session!.role}
           academicYears={academicYearResult.academicYears}
           classes={classResult.classes}
           pagination={{

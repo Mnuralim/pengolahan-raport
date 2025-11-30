@@ -5,6 +5,7 @@ import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Gender, Prisma, Religion } from "@prisma/client";
 import { imagekit } from "@/lib/imagekit";
+import { getSession } from "../session";
 
 export const getStudent = unstable_cache(
   async function getStudent(id: string) {
@@ -159,6 +160,13 @@ export async function createStudent(
     const headCircumference = formData.get("headCircumference") as string;
     const measurementDate = formData.get("measurementDate") as string;
 
+    const session = await getSession();
+
+    if (!session || session.role !== "ADMIN") {
+      return {
+        error: "Anda tidak memiliki izin untuk melakukan tindakan ini.",
+      };
+    }
     if (!nis) {
       return {
         error: "NIS harus diisi.",
@@ -308,7 +316,13 @@ export async function updateStudent(
     const admittedAt = formData.get("admittedAt") as string;
     const classId = formData.get("classId") as string;
     const profileImage = formData.get("profileImage") as File;
+    const session = await getSession();
 
+    if (!session || session.role !== "ADMIN") {
+      return {
+        error: "Anda tidak memiliki izin untuk melakukan tindakan ini.",
+      };
+    }
     if (!nis) {
       return {
         error: "NIS harus diisi.",
@@ -436,6 +450,13 @@ export async function updateStudent(
 
 export async function deleteStudent(id: string) {
   try {
+    const session = await getSession();
+
+    if (!session || session.role !== "ADMIN") {
+      redirect(
+        `/students?error=1&message=Anda tidak memiliki izin untuk melakukan tindakan ini.`
+      );
+    }
     const existingStudent = await prisma.student.findUnique({
       where: { id, isDeleted: false },
     });

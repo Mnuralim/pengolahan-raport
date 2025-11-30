@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import type { AgeGroup, Prisma } from "@prisma/client";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
+import { getSession } from "../session";
 
 export const getAllClasses = unstable_cache(
   async function getAllClasses(
@@ -11,11 +12,16 @@ export const getAllClasses = unstable_cache(
     limit: string,
     sortBy: string,
     sortOrder: string,
-    search?: string
+    search?: string,
+    id?: string
   ) {
     const where: Prisma.ClassWhereInput = {
       isDeleted: false,
     };
+
+    if (id) {
+      where.id = id;
+    }
 
     if (search) {
       where.OR = [
@@ -83,6 +89,14 @@ export async function createClass(
     const ageGroup = formData.get("ageGroup") as string;
     const teacherId = formData.get("teacherId") as string;
 
+    const session = await getSession();
+
+    if (!session || session.role !== "ADMIN") {
+      return {
+        error: "Anda tidak memiliki izin untuk melakukan tindakan ini.",
+      };
+    }
+
     if (!name) {
       return {
         error: "Nama kelas harus diisi.",
@@ -127,6 +141,22 @@ export async function createClass(
       };
     }
 
+    const teacherInClass = await prisma.class.findFirst({
+      where: {
+        teacherId,
+        isDeleted: false,
+      },
+      select: {
+        name: true,
+      },
+    });
+
+    if (teacherInClass) {
+      return {
+        error: `Guru ${existingTeacher.name} sudah mengajar di kelas ${teacherInClass.name}.`,
+      };
+    }
+
     await prisma.class.create({
       data: {
         name,
@@ -158,7 +188,13 @@ export async function updateClass(
     const name = formData.get("name") as string;
     const ageGroup = formData.get("ageGroup") as string;
     const teacherId = formData.get("teacherId") as string;
+    const session = await getSession();
 
+    if (!session || session.role !== "ADMIN") {
+      return {
+        error: "Anda tidak memiliki izin untuk melakukan tindakan ini.",
+      };
+    }
     if (!name) {
       return {
         error: "Nama kelas harus diisi.",
@@ -217,6 +253,23 @@ export async function updateClass(
       };
     }
 
+    const teacherInClass = await prisma.class.findFirst({
+      where: {
+        teacherId,
+        isDeleted: false,
+        NOT: { id },
+      },
+      select: {
+        name: true,
+      },
+    });
+
+    if (teacherInClass) {
+      return {
+        error: `Guru ${existingTeacher.name} sudah mengajar di kelas ${teacherInClass.name}.`,
+      };
+    }
+
     await prisma.class.update({
       where: { id },
       data: {
@@ -242,6 +295,14 @@ export async function updateClass(
 
 export async function deleteClass(id: string) {
   try {
+    const session = await getSession();
+
+    if (!session || session.role !== "ADMIN") {
+      redirect(
+        `/classes?error=1&message=Anda tidak memiliki izin untuk melakukan tindakan ini.`
+      );
+      return;
+    }
     const existingClass = await prisma.class.findUnique({
       where: {
         id,

@@ -9,7 +9,7 @@ import { deleteStudent } from "@/actions/student";
 import { Pagination } from "../../_components/pagination";
 import { Modal } from "../../_components/modal";
 import { Alert } from "../../_components/alert";
-import type { AcademicYear, Class, Prisma } from "@prisma/client";
+import type { AcademicYear, Class, Prisma, Role } from "@prisma/client";
 import { FilterControlStudents } from "./filter-controll";
 import Image from "next/image";
 
@@ -24,6 +24,7 @@ interface Props {
   pagination: PaginationProps;
   classes: Class[];
   academicYears: AcademicYear[];
+  teacherRole: Role;
 }
 
 export const StudentList = ({
@@ -33,6 +34,7 @@ export const StudentList = ({
   pagination,
   classes,
   academicYears,
+  teacherRole,
 }: Props) => {
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const [selectedStudent, setSelectedStudent] =
@@ -205,6 +207,7 @@ export const StudentList = ({
             <Eye className="w-4 h-4" />
           </button>
           <button
+            disabled={teacherRole !== "ADMIN"}
             onClick={() => handleOpenModal(item)}
             className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed border border-blue-200"
             title="Edit Data"
@@ -214,6 +217,7 @@ export const StudentList = ({
           <form action={() => deleteStudent(item.id)}>
             <button
               type="submit"
+              disabled={teacherRole !== "ADMIN"}
               onClick={(e) => {
                 e.preventDefault();
                 if (
@@ -224,7 +228,7 @@ export const StudentList = ({
                   e.currentTarget.form?.requestSubmit();
                 }
               }}
-              className="w-8 h-8 inline-flex items-center justify-center rounded-md bg-red-500 text-white hover:bg-red-600 text-sm transition-colors duration-150"
+              className="w-8 h-8 inline-flex items-center justify-center rounded-md bg-red-500 text-white hover:bg-red-600 text-sm transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Hapus Data"
             >
               <Trash2 className="w-4 h-4" />
@@ -244,15 +248,18 @@ export const StudentList = ({
             Total Siswa: {pagination.totalItems}
           </span>
         </div>
-        <button
-          onClick={() => handleOpenModal()}
-          className="inline-flex items-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-800 transition-colors duration-150 shadow-sm border border-blue-600"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Tambah Siswa
-        </button>
+        {teacherRole === "ADMIN" ? (
+          <button
+            onClick={() => handleOpenModal()}
+            className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md shadow-sm transition-colors duration-150"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Tambah Siswa
+          </button>
+        ) : null}
       </div>
       <FilterControlStudents
+        teacherRole={teacherRole}
         classes={classes}
         path="students"
         currentClassId={pagination.preserveParams!.classId as string}

@@ -3,6 +3,7 @@ interface SessionPayload {
   username: string;
   name?: string;
   expiresAt: Date;
+  role: "ADMIN" | "GURU" | "KEPALA_SEKOLAH";
 }
 
 interface FormState {
