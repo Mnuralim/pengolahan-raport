@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { Edit, Plus, Trash2, UserCheck } from "lucide-react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Tabel, type TabelColumn } from "../../_components/tabel";
@@ -13,7 +13,11 @@ import { ClassForm } from "./form";
 
 export type ClassWithRelations = Prisma.ClassGetPayload<{
   include: {
-    teacher: true;
+    teachers: {
+      include: {
+        teacher: true;
+      };
+    };
     _count: {
       select: {
         students: true;
@@ -62,8 +66,8 @@ export const ClassList = ({
   const formatAgeGroup = (ageGroup: string) => {
     const ageGroupMap: Record<string, string> = {
       TODDLER: "Toddler (1-2 tahun)",
-      PRESCHOOL: "Preschool (3-4 tahun)",
-      KINDERGARTEN: "Kindergarten (5-6 tahun)",
+      GROUP_A: "Group A (3-4 tahun)",
+      GROUP_B: "Group B (5-6 tahun)",
     };
     return ageGroupMap[ageGroup] || ageGroup;
   };
@@ -96,8 +100,82 @@ export const ClassList = ({
       ),
     },
     {
-      header: "Guru Kelas",
-      accessor: (item) => item.teacher?.name || "-",
+      header: "Wali Kelas",
+      accessor: (item) => {
+        if (item.teachers.length === 0) return "-";
+        const primaryTeacher = item.teachers.find((ct) => ct.isPrimary);
+        return (
+          primaryTeacher?.teacher.name || item.teachers[0]?.teacher.name || "-"
+        );
+      },
+      render: (item) => {
+        if (item.teachers.length === 0) {
+          return <span className="text-gray-400">Belum ada guru</span>;
+        }
+
+        const primaryTeacher = item.teachers.find((ct) => ct.isPrimary);
+        const otherTeachers = item.teachers.filter((ct) => !ct.isPrimary);
+
+        return (
+          <div className="space-y-1">
+            {/* Guru utama */}
+            {primaryTeacher && (
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-900">
+                  {primaryTeacher.teacher.name}
+                </span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                  <UserCheck className="w-3 h-3 mr-1" />
+                  Utama
+                </span>
+              </div>
+            )}
+
+            {/* Guru lainnya */}
+            {otherTeachers.length > 0 && (
+              <div className="text-sm text-gray-600">
+                {otherTeachers.length === 1 ? (
+                  <span>+ {otherTeachers[0].teacher.name}</span>
+                ) : (
+                  <span>+ {otherTeachers.length} guru lainnya</span>
+                )}
+              </div>
+            )}
+
+            {/* Tooltip untuk menampilkan semua guru */}
+            {item.teachers.length > 1 && (
+              <div className="group relative inline-block">
+                <button
+                  type="button"
+                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                >
+                  Lihat semua ({item.teachers.length})
+                </button>
+                <div className="invisible group-hover:visible absolute z-10 w-64 p-3 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
+                  <p className="text-xs font-semibold text-gray-700 mb-2">
+                    Semua Wali Kelas:
+                  </p>
+                  <ul className="space-y-1">
+                    {item.teachers.map((ct) => (
+                      <li
+                        key={ct.id}
+                        className="text-xs text-gray-600 flex items-center gap-1"
+                      >
+                        <span>• {ct.teacher.name}</span>
+                        {ct.isPrimary && (
+                          <span className="text-green-600 font-medium">
+                            (Utama)
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       header: "Jumlah Siswa",

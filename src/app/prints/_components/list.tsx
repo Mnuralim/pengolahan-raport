@@ -10,7 +10,7 @@ import type { AcademicYear, Prisma, Role } from "@prisma/client";
 
 export type ClassWithRelations = Prisma.ClassGetPayload<{
   include: {
-    teacher: true;
+    teachers: true;
     _count: {
       select: {
         students: true;

@@ -23,7 +23,8 @@ model Teacher {
   deletedAt DateTime?     @map("deleted_at")
   createdAt DateTime      @default(now()) @map("created_at")
   updatedAt DateTime      @default(now()) @updatedAt @map("updated_at")
-  classes   Class[]
+
+  classes ClassTeacher[]
 
   @@map("teachers")
 }
@@ -32,6 +33,24 @@ enum Role {
   GURU
   KEPALA_SEKOLAH
   ADMIN
+}
+
+model ClassTeacher {
+  id        String    @id @unique @default(uuid())
+  class     Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  classId   String    @map("class_id")
+  teacher   Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId String    @map("teacher_id")
+  isPrimary Boolean   @default(false) @map("is_primary")
+  isDeleted Boolean   @default(false) @map("is_deleted")
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([classId, teacherId])
+  @@index([classId])
+  @@index([teacherId])
+  @@map("class_teachers")
 }
 
 enum Gender {
@@ -91,13 +110,12 @@ model Class {
   id        String    @id @unique @default(uuid())
   name      String
   ageGroup  AgeGroup  @default(GROUP_A) @map("age_group")
-  teacher   Teacher   @relation(fields: [teacherId], references: [id])
-  teacherId String
   isDeleted Boolean   @default(false) @map("is_deleted")
   deletedAt DateTime? @map("deleted_at")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
 
+  teachers ClassTeacher[]
   students Student[]
 
   @@map("classes")

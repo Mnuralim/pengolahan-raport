@@ -16,7 +16,7 @@ interface Props {
   }>;
 }
 
-export default async function ClassPage({ searchParams }: Props) {
+export default async function AssessmentPage({ searchParams }: Props) {
   const { success, message, error, limit, skip, sortBy, sortOrder } =
     await searchParams;
 
@@ -24,7 +24,9 @@ export default async function ClassPage({ searchParams }: Props) {
 
   const teacher = await getTeacher(session!.id);
 
-  if (teacher?.classes.length === 0 && session?.role === "GURU") {
+  const teacherClassIds = teacher?.classes.map((ct) => ct.class.id) || [];
+
+  if (teacherClassIds.length === 0 && session?.role === "GURU") {
     return (
       <div className="bg-white border border-slate-200 shadow-sm rounded-lg">
         <div className="px-6 py-6 border-b border-slate-100 bg-slate-50">
@@ -41,9 +43,29 @@ export default async function ClassPage({ searchParams }: Props) {
         </div>
 
         <div className="p-6">
-          <div className="text-center text-slate-700">
-            Anda belum ditugaskan ke kelas manapun. Silakan hubungi admin untuk
-            penugasan kelas.
+          <div className="text-center py-12">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4">
+              <svg
+                className="w-8 h-8 text-amber-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              Belum Ada Kelas Ditugaskan
+            </h3>
+            <p className="text-slate-600 max-w-md mx-auto">
+              Anda belum ditugaskan ke kelas manapun. Silakan hubungi admin
+              untuk penugasan kelas.
+            </p>
           </div>
         </div>
       </div>
@@ -57,7 +79,7 @@ export default async function ClassPage({ searchParams }: Props) {
       sortBy || "name",
       sortOrder || "desc",
       undefined,
-      session!.role === "GURU" ? teacher?.classes[0].id : undefined
+      session!.role === "GURU" ? teacherClassIds.join(",") : undefined
     ),
     getAllAcademicYears("0", "100", "createdAt", "desc"),
   ]);

@@ -22,7 +22,9 @@ export default async function PrintsPage({ searchParams }: Props) {
   const session = await getSession();
   const teacher = await getTeacher(session!.id);
 
-  if (teacher?.classes.length === 0 && session?.role === "GURU") {
+  const teacherClassIds = teacher?.classes.map((ct) => ct.class.id) || [];
+
+  if (teacherClassIds.length === 0 && session?.role === "GURU") {
     return (
       <div className="bg-white border border-slate-200 shadow-sm rounded-lg">
         <div className="px-6 py-6 border-b border-slate-100 bg-slate-50">
@@ -55,7 +57,7 @@ export default async function PrintsPage({ searchParams }: Props) {
       sortBy || "name",
       sortOrder || "desc",
       undefined,
-      session!.role === "GURU" ? teacher?.classes[0].id : undefined
+      session!.role === "GURU" ? teacherClassIds.join(",") : undefined
     ),
     getAllAcademicYears("0", "100", "createdAt", "desc"),
   ]);

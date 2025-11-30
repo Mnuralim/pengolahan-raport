@@ -20,7 +20,9 @@ export const getAllClasses = unstable_cache(
     };
 
     if (id) {
-      where.id = id;
+      where.id = {
+        in: id.split(","),
+      };
     }
 
     if (search) {
@@ -31,9 +33,13 @@ export const getAllClasses = unstable_cache(
           },
         },
         {
-          teacher: {
-            name: {
-              contains: search,
+          teachers: {
+            some: {
+              teacher: {
+                name: {
+                  contains: search,
+                },
+              },
             },
           },
         },
@@ -52,7 +58,17 @@ export const getAllClasses = unstable_cache(
           [sortBy || "createdAt"]: sortOrder === "desc" ? "desc" : "asc",
         },
         include: {
-          teacher: true,
+          teachers: {
+            where: {
+              isDeleted: false,
+            },
+            include: {
+              teacher: true,
+            },
+            orderBy: {
+              isPrimary: "desc",
+            },
+          },
           _count: {
             select: {
               students: {
@@ -87,7 +103,18 @@ export async function createClass(
   try {
     const name = formData.get("name") as string;
     const ageGroup = formData.get("ageGroup") as string;
-    const teacherId = formData.get("teacherId") as string;
+    const teacherIdsStr = formData.get("teacherIds") as string;
+    const primaryTeacherId = formData.get("primaryTeacherId") as string;
+
+    let teacherIds: string[] = [];
+    try {
+      teacherIds = JSON.parse(teacherIdsStr || "[]");
+    } catch (e) {
+      console.error("Error parsing teacherIds:", e);
+      return {
+        error: "Format data guru tidak valid.",
+      };
+    }
 
     const session = await getSession();
 
@@ -109,9 +136,39 @@ export async function createClass(
       };
     }
 
-    if (!teacherId) {
+    if (!teacherIds || teacherIds.length === 0) {
       return {
-        error: "Guru harus dipilih.",
+        error: "Minimal satu guru harus dipilih.",
+      };
+    }
+
+    if (primaryTeacherId && !teacherIds.includes(primaryTeacherId)) {
+      return {
+        error: "Wali kelas utama harus termasuk dalam daftar guru.",
+      };
+    }
+
+    // Validasi: Cek apakah ada guru yang sudah terdaftar di kelas lain
+    const existingTeachers = await prisma.classTeacher.findMany({
+      where: {
+        teacherId: { in: teacherIds },
+        isDeleted: false,
+        class: {
+          isDeleted: false,
+        },
+      },
+      include: {
+        teacher: true,
+        class: true,
+      },
+    });
+
+    if (existingTeachers.length > 0) {
+      const teacherNames = existingTeachers
+        .map((ct) => `${ct.teacher.name} (${ct.class.name})`)
+        .join(", ");
+      return {
+        error: `Guru berikut sudah terdaftar di kelas lain: ${teacherNames}`,
       };
     }
 
@@ -128,32 +185,16 @@ export async function createClass(
       };
     }
 
-    const existingTeacher = await prisma.teacher.findUnique({
+    const teachers = await prisma.teacher.findMany({
       where: {
-        id: teacherId,
+        id: { in: teacherIds },
         isDeleted: false,
       },
     });
 
-    if (!existingTeacher) {
+    if (teachers.length !== teacherIds.length) {
       return {
-        error: "Guru tidak ditemukan atau sudah tidak aktif.",
-      };
-    }
-
-    const teacherInClass = await prisma.class.findFirst({
-      where: {
-        teacherId,
-        isDeleted: false,
-      },
-      select: {
-        name: true,
-      },
-    });
-
-    if (teacherInClass) {
-      return {
-        error: `Guru ${existingTeacher.name} sudah mengajar di kelas ${teacherInClass.name}.`,
+        error: "Beberapa guru tidak ditemukan atau sudah tidak aktif.",
       };
     }
 
@@ -161,7 +202,12 @@ export async function createClass(
       data: {
         name,
         ageGroup: ageGroup as AgeGroup,
-        teacherId,
+        teachers: {
+          create: teacherIds.map((teacherId) => ({
+            teacherId,
+            isPrimary: teacherId === primaryTeacherId,
+          })),
+        },
       },
     });
 
@@ -187,7 +233,19 @@ export async function updateClass(
     const id = formData.get("id") as string;
     const name = formData.get("name") as string;
     const ageGroup = formData.get("ageGroup") as string;
-    const teacherId = formData.get("teacherId") as string;
+    const teacherIdsStr = formData.get("teacherIds") as string;
+    const primaryTeacherId = formData.get("primaryTeacherId") as string;
+
+    let teacherIds: string[] = [];
+    try {
+      teacherIds = JSON.parse(teacherIdsStr || "[]");
+    } catch (e) {
+      console.error("Error parsing teacherIds:", e);
+      return {
+        error: "Format data guru tidak valid.",
+      };
+    }
+
     const session = await getSession();
 
     if (!session || session.role !== "ADMIN") {
@@ -195,6 +253,7 @@ export async function updateClass(
         error: "Anda tidak memiliki izin untuk melakukan tindakan ini.",
       };
     }
+
     if (!name) {
       return {
         error: "Nama kelas harus diisi.",
@@ -207,9 +266,42 @@ export async function updateClass(
       };
     }
 
-    if (!teacherId) {
+    if (!teacherIds || teacherIds.length === 0) {
       return {
-        error: "Guru harus dipilih.",
+        error: "Minimal satu guru harus dipilih.",
+      };
+    }
+
+    if (primaryTeacherId && !teacherIds.includes(primaryTeacherId)) {
+      return {
+        error: "Wali kelas utama harus termasuk dalam daftar guru.",
+      };
+    }
+
+    // Validasi: Cek apakah ada guru yang sudah terdaftar di kelas lain (selain kelas yang sedang diedit)
+    const existingTeachers = await prisma.classTeacher.findMany({
+      where: {
+        teacherId: { in: teacherIds },
+        isDeleted: false,
+        classId: {
+          not: id, // Exclude kelas yang sedang diedit
+        },
+        class: {
+          isDeleted: false,
+        },
+      },
+      include: {
+        teacher: true,
+        class: true,
+      },
+    });
+
+    if (existingTeachers.length > 0) {
+      const teacherNames = existingTeachers
+        .map((ct) => `${ct.teacher.name} (${ct.class.name})`)
+        .join(", ");
+      return {
+        error: `Guru berikut sudah terdaftar di kelas lain: ${teacherNames}`,
       };
     }
 
@@ -240,44 +332,37 @@ export async function updateClass(
       };
     }
 
-    const existingTeacher = await prisma.teacher.findUnique({
+    const teachers = await prisma.teacher.findMany({
       where: {
-        id: teacherId,
+        id: { in: teacherIds },
         isDeleted: false,
       },
     });
 
-    if (!existingTeacher) {
+    if (teachers.length !== teacherIds.length) {
       return {
-        error: "Guru tidak ditemukan atau sudah tidak aktif.",
+        error: "Beberapa guru tidak ditemukan atau sudah tidak aktif.",
       };
     }
 
-    const teacherInClass = await prisma.class.findFirst({
-      where: {
-        teacherId,
-        isDeleted: false,
-        NOT: { id },
-      },
-      select: {
-        name: true,
-      },
-    });
-
-    if (teacherInClass) {
-      return {
-        error: `Guru ${existingTeacher.name} sudah mengajar di kelas ${teacherInClass.name}.`,
-      };
-    }
-
-    await prisma.class.update({
-      where: { id },
-      data: {
-        name,
-        ageGroup: ageGroup as AgeGroup,
-        teacherId,
-      },
-    });
+    await prisma.$transaction([
+      prisma.classTeacher.deleteMany({
+        where: { classId: id },
+      }),
+      prisma.class.update({
+        where: { id },
+        data: {
+          name,
+          ageGroup: ageGroup as AgeGroup,
+          teachers: {
+            create: teacherIds.map((teacherId) => ({
+              teacherId,
+              isPrimary: teacherId === primaryTeacherId,
+            })),
+          },
+        },
+      }),
+    ]);
 
     revalidateTag("class");
     revalidateTag("classes");

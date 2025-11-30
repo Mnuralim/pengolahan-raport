@@ -16,8 +16,17 @@ export const getTeacher = unstable_cache(
       },
       include: {
         classes: {
-          select: {
-            id: true,
+          where: {
+            isDeleted: false,
+          },
+          include: {
+            class: {
+              select: {
+                id: true,
+                name: true,
+                ageGroup: true,
+              },
+            },
           },
         },
       },

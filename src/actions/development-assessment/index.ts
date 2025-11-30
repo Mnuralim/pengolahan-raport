@@ -124,7 +124,7 @@ export const getDevelopmentAssessmentById = unstable_cache(
           include: {
             class: {
               include: {
-                teacher: true,
+                teachers: true,
               },
             },
           },
