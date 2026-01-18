@@ -294,7 +294,6 @@ export async function updateDevelopmentAssessment(
     const indicatorId = formData.get("indicatorId") as string;
     const development = formData.get("development") as string;
     const notes = formData.get("notes") as string;
-    const assessmentDate = formData.get("assessmentDate") as string;
 
     if (!studentId) {
       return {
@@ -385,7 +384,7 @@ export async function updateDevelopmentAssessment(
         indicatorId,
         development: development as DevelopmentLevel,
         notes: notes || null,
-        assessmentDate: assessmentDate ? new Date(assessmentDate) : null,
+        assessmentDate: new Date(),
       },
     });
 
@@ -530,9 +529,7 @@ export async function createBulkDevelopmentAssessments(
           indicatorId: item.indicatorId,
           development: item.development as DevelopmentLevel,
           notes: item.notes || null,
-          assessmentDate: item.assessmentDate
-            ? new Date(item.assessmentDate)
-            : null,
+          assessmentDate: new Date(),
           semester,
           academicYearId: academicYear,
         });
@@ -664,9 +661,7 @@ export async function updateBulkDevelopmentAssessments(
               data: {
                 development: item.development as DevelopmentLevel,
                 notes: item.notes || null,
-                assessmentDate: item.assessmentDate
-                  ? new Date(item.assessmentDate)
-                  : null,
+                assessmentDate: new Date(),
                 semester,
                 academicYearId: existingYear.id,
                 updatedAt: new Date(),
@@ -693,9 +688,7 @@ export async function updateBulkDevelopmentAssessments(
                   indicatorId: item.indicatorId,
                   development: item.development as DevelopmentLevel,
                   notes: item.notes || null,
-                  assessmentDate: item.assessmentDate
-                    ? new Date(item.assessmentDate)
-                    : null,
+                  assessmentDate: new Date(),
                   semester,
                   academicYearId: existingYear.id,
                 },
@@ -730,9 +723,7 @@ export async function updateBulkDevelopmentAssessments(
             indicatorId: item.indicatorId,
             development: item.development as DevelopmentLevel,
             notes: item.notes || null,
-            assessmentDate: item.assessmentDate
-              ? new Date(item.assessmentDate)
-              : null,
+            assessmentDate: new Date(),
             semester,
             academicYearId: existingYear.id,
           });
